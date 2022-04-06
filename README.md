@@ -4,12 +4,12 @@ Repo for UMBC CMSC 447 (Software Engineering) project.  Our project: Digital Log
 ## Installation
 Use the package manager pip to install django within a your virtualenv
 
-'''bash
+```bash
 pip install django
-'''
+```
 
 Set up git and clone the repository 
 
-'''bash
+```bash
 git clone https://github.com/Electrimatics/digital_logic_simulator.git
-'''
+```
