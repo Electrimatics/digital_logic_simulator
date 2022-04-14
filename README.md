@@ -14,11 +14,20 @@ Set up git and clone the repository
 git clone https://github.com/Electrimatics/digital_logic_simulator.git
 ```
 
-## Required Technologies
+## Required Dependencies
 The required python packages are found in the [requirements.txt](./requirements.txt) file.  To install them:
 ```bash
 pip install -r requirements.txt
 ```
+No additional configuration is necessary.
+
+Additionally, in order to run the web application and test suite,
+you must create a `.env` file in the same directory as `manage.py` with the following information:
+```
+SECRET_KEY = "MY_SECRETE_KEY"
+DEBUG = True
+```
+Set your secrete key to something else, ideally!
 
 ## Running Test Suites
 The Django test framework allows you to either run every unittest at the same time or individual ones.  To run all unit tests, navigate to the directory where [manage.py](./manage.py) and run:
