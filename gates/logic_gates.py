@@ -1,4 +1,6 @@
 import collections
+from distutils.log import Log
+import logging
 from typing import Type
 
 Pin = collections.namedtuple("Pin", ('name', 'status'))
@@ -14,6 +16,10 @@ class PinCollectionException(Exception):
 class PinCollection:
     def __init__(self, pins : list = []) -> None:
         self._pins = dict(zip(pins, [0]*len(pins)))
+
+    @property
+    def pins(self) -> dict:
+        return self._pins
 
     def __getitem__(self, name : str) -> collections.namedtuple:
         return Pin(self._pins.get(name, ('', -1)))
@@ -117,18 +123,8 @@ class LogicGateManager:
     def gates(self):
         return self._gateMapper;
 
-    def __iadd__(self, gate : LogicGate):
-        if type(gate) != LogicGate:
-            raise TypeError(F"Only gates may be added to the logic gate manager, not {type(gate)}")
-        
-        self._gateMapper.update({gate.name:{}})
-        return self
-
-    def __isub__(self, gate : LogicGate):
-        if type(gate) != LogicGate:
-            raise TypeError(F"Only gates may be removed to the logic gate manager, not {type(gate)}")
-        self._gateMapper.pop(gate.name)
-        return self
+    def __getitem__(self, name : str) -> LogicGate:
+        return self._gateKeeper.get(name)
 
     def add_gate(self, type : str, name : str, inputs : list = [], outputs : list = []) -> None:
         self._gateKeeper.update({name: LogicGate(type, name, inputs, outputs)})
