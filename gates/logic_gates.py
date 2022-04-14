@@ -27,7 +27,7 @@ class PinCollection:
     def __setitem__(self, name : str, value : int) -> None:
         if abs(value) > 1:
             raise PinCollectionException(f"A pin cannot be set to value {value}. Must be 0 or 1")
-        if self._pins.has_key(name):
+        if name in self._pins:
             self._pins[name] = value
         else:
             raise PinCollectionException(f"A pin with the name {name} cannot be set as it does not exist")
@@ -93,9 +93,15 @@ class LogicGate:
         for i in inputs:
             self._inputs += i
 
+    def set_input(self, name : str):
+        self._inputs[name] = 1
+
     def add_outputs(self, outputs : list):
         for o in outputs:
             self._outputs += o
+
+    def set_output(self, name : str):
+        self._outputs[name] = 0;
 
     def __repr__(self):
         return f"Gate '{self.name}' ({self._type}): \n\tInputs: {self._inputs} \n\tOutputs: {self._outputs}"
@@ -120,7 +126,7 @@ class LogicGateManager:
         self._gateKeeper = {}
 
     @property
-    def gates(self):
+    def connections(self):
         return self._gateMapper;
 
     def __getitem__(self, name : str) -> LogicGate:
@@ -153,15 +159,3 @@ class LogicGateManager:
 
             gate_string += "\n"
         return gate_string
-
-def main():
-    gate_manager = LogicGateManager()
-    gate_manager.add_gate(type='GATE', name="G1", inputs=['A', 'B'], outputs=['O'])
-    gate_manager.add_gate(type='GATE', name="G2", inputs=['A', 'B'], outputs=['O'])
-
-    gate_manager.add_connection(GatePin("G1", 'O'), GatePin("G2", 'A'))
-    gate_manager.add_connection(GatePin("G1", 'O'), GatePin("G2", 'B'))
-
-    print(gate_manager)
-
-main()
