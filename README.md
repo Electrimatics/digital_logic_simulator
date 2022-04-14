@@ -13,3 +13,34 @@ Set up git and clone the repository
 ```bash
 git clone https://github.com/Electrimatics/digital_logic_simulator.git
 ```
+
+## Required Technologies
+The required python packages are found in the [requirements.txt](./requirements.txt) file.  To install them:
+```bash
+pip install -r requirements.txt
+```
+
+## Running Test Suites
+The Django test framework allows you to either run every unittest at the same time or individual ones.  To run all unit tests, navigate to the directory where [manage.py](./manage.py) and run:
+```bash
+python3 manage.py test
+```
+To run all the tests in a module, run
+```bash
+python3 manage.py [module_name].tests
+```
+To run a specific test case in a module, run
+```bash
+python3 manage.py [module_name].tests.[case_name]
+```
+For additional information on running tests, visit the [DJango test tutorial](https://docs.djangoproject.com/en/4.0/topics/testing/overview/)
+
+### Example
+To run all the tests in the `gates` module, run
+```bash
+python3 manage.py test gate.tests
+```
+To run the TestGenericLogicGate case specifically, run
+```bash
+python3 manage.py test gates.tests.TestGenericLogicGate
+```
