@@ -3,9 +3,6 @@ from typing import Type
 
 Pin = collections.namedtuple("Pin", ('name', 'status'))
 
-class Clock:
-    def __init__(self) -> None:
-        self.frequency = 1000000
 
 class PinCollectionException(Exception):
     def __init__(self, *args: object) -> None:
@@ -38,18 +35,24 @@ class PinCollection:
 '''
 Base class for all logic gates to inherit from.  This gate is a generic gate
 that should not be used directly in any circuit.
+
+Logic gates are only aware of their own inputs and produce the corresponding output.
+An external manager will control signal and clock cycle management.
 '''
 class LogicGate:
-    def __init__(self, name : str) -> None:
+    def __init__(self, name : str, inputs : list[str] = [], outputs : list[str] = []) -> None:
         self._name = name
-        self._inputs = None
-        self._outputs = None
+        self._inputs = PinCollection(inputs)
+        self._outputs = PinCollection(outputs)
 
-    def _handle_input_receive(self):
-        pass
+    def _handle_input_receive(self, pin : str) -> None:
+        self._inputs[pin] = 1
 
-    def _handle_output_signal(self):
-        pass
+    def _logic(self, *args, **kwargs) -> None:
+        raise NotImplementedError("Logic not implemented for the generic logic gate")
+    
+    def _handle_output_request(self, pin : str) -> bool:
+        return self._outputs[pin]
 
     @property
     def name(self) -> str:
@@ -63,23 +66,48 @@ class LogicGate:
     def inputs(self) -> list[Pin]:
         return self._inputs
 
-    @inputs.setter
-    def inputs(self, input : Pin) -> None:
-        self += input
-
-    def __iadd__(self, pin : Pin) -> None:
-        if type(pin) != Pin:
-            raise TypeError(f"LogicGates can only add Pin types, not {type(pin)}")
-        self._name.append(pin)
-
     @property
     def outputs(self) -> list[Pin]:
         return self._outputs
 
-    @outputs.setter
-    def outputs(self, output : Pin) -> None:
-        self -= output
+    def add_inputs(self, inputs : list[str]):
+        for i in inputs:
+            self._inputs += i
 
-    def __isub__(self, pin : Pin) -> None:
-        if type(pin) != Pin:
-            raise TypeError(f"LogicGates can only remove Pin types, not {type(pin)}")
+    def add_outputs(self, outputs : list[str]):
+        for o in outputs:
+            self._outputs += o
+
+class LogicGateManagerException(Exception):
+    def __init__(self, *args: object) -> None:
+        super().__init__(*args)
+
+
+# idea - each gate has a unique name in the dictionary
+# the value is a sub dictionary with each of the gates it connects to
+# each connected gate's value is a list of the pin mappings
+# {G1:
+#   {G2: [(p1, p1), (p2, p3)]
+#    ...
+#   }
+# ...
+# }
+class LogicGateManager:
+    def __init__(self) -> None:
+        self._gates = {}
+
+    @property
+    def gates(self):
+        return self._gates;
+
+    def __iadd__(self, gate : LogicGate) -> None:
+        if type(gate) != LogicGate:
+            raise TypeError(F"Only gates may be added to the logic gate manager, not {type(gate)}")
+        self._gates.append(gate)
+
+    def __isub__(self, gate : LogicGate) -> None:
+        if type(gate) != LogicGate:
+            raise TypeError(F"Only gates may be added to the logic gate manager, not {type(gate)}")
+        self._gates.remove(gate)
+
+    
