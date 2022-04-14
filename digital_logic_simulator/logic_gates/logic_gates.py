@@ -5,7 +5,6 @@ Pin = collections.namedtuple("Pin", ('name', 'status'))
 GatePin = collections.namedtuple("GatePin", ('gate', 'pin'))
 PinConnection = collections.namedtuple("PinConnection", ('o_pin', 'i_pin'))
 
-
 # TODO: Convert this to a django model
 
 class PinCollectionException(Exception):
@@ -27,14 +26,16 @@ class PinCollection:
         else:
             raise PinCollectionException(f"A pin with the name {name} cannot be set as it does not exist")
 
-    def __iadd__(self, name : str) -> None:
+    def __iadd__(self, name : str):
         self._pins[name] = 0
+        return self
 
-    def __isub__(self, name : str) -> None:
+    def __isub__(self, name : str):
         try:
             self._pins.pop(name)
         except KeyError:
             raise PinCollectionException(f"A pin with the name {name} cannot be removed as it does not exist")
+        return self
     
     def __repr__(self):
         return f"{self._pins}"
@@ -47,7 +48,8 @@ Logic gates are only aware of their own inputs and produce the corresponding out
 An external manager will control signal and clock cycle management.
 '''
 class LogicGate:
-    def __init__(self, name : str, inputs : list = [], outputs : list = []) -> None:
+    def __init__(self, type : str, name : str, inputs : list = [], outputs : list = []) -> None:
+        self._type = type
         self._name = name
         self._inputs = PinCollection(inputs)
         self._outputs = PinCollection(outputs)
@@ -60,6 +62,10 @@ class LogicGate:
     
     def _handle_output_request(self, pin : str) -> bool:
         return self._outputs[pin]
+
+    @property
+    def type(self) -> str:
+        return self._type
 
     @property
     def name(self) -> str:
@@ -86,7 +92,7 @@ class LogicGate:
             self._outputs += o
 
     def __repr__(self):
-        return f"Logic gate '{self.name}' \n\tInputs: {self._inputs} \n\tOutputs: {self._outputs}"
+        return f"Gate '{self.name}' ({self._type}): \n\tInputs: {self._inputs} \n\tOutputs: {self._outputs}"
 
 class LogicGateManagerException(Exception):
     def __init__(self, *args: object) -> None:
@@ -104,36 +110,62 @@ class LogicGateManagerException(Exception):
 # }
 class LogicGateManager:
     def __init__(self) -> None:
-        self._gates = {}
+        self._gateMapper = {}
+        self._gateKeeper = {}
 
     @property
     def gates(self):
-        return self._gates;
+        return self._gateMapper;
 
-    def __iadd__(self, gate : LogicGate) -> None:
+    def __iadd__(self, gate : LogicGate):
         if type(gate) != LogicGate:
             raise TypeError(F"Only gates may be added to the logic gate manager, not {type(gate)}")
-        self._gates.update({gate.name:{}})
+        
+        self._gateMapper.update({gate.name:{}})
+        return self
 
-    def __isub__(self, gate : LogicGate) -> None:
+    def __isub__(self, gate : LogicGate):
         if type(gate) != LogicGate:
             raise TypeError(F"Only gates may be removed to the logic gate manager, not {type(gate)}")
-        self._gates.pop(gate.name)
+        self._gateMapper.pop(gate.name)
+        return self
+
+    def add_gate(self, type : str, name : str, inputs : list = [], outputs : list = []) -> None:
+        self._gateKeeper.update({name: LogicGate(type, name, inputs, outputs)})
+        self._gateMapper.update({name:{}})
+
+    def remove_gate(self, name):
+        self._gateKeeper.pop(name)
+        self._gateMapper.pop(name)
 
     def add_connection(self, output_gate : GatePin, input_gate : GatePin):
-        if not self._gates.haskey(input_gate.gate) or not self._gates.haskey(output_gate.gate):
+        if output_gate.gate not in self._gateMapper or input_gate.gate not in self._gateMapper:
             raise LogicGateManagerException(f"Cannot create a conneection between {output_gate.gate} and {input_gate.gate} because at least one gate does not exist")
 
-        connections = self._gates.get(input_gate.gate).get(output_gate.gate)
-        self._gates[input_gate.gate].update({output_gate.gate: connections.append(PinConnection(output_gate.pin, input_gate.pin))})
+        connections = self._gateMapper.get(output_gate.gate).get(input_gate.gate, [])
+        connections.append(PinConnection(output_gate.pin, input_gate.pin))
+        self._gateMapper[output_gate.gate].update({input_gate.gate: connections})
 
     def __repr__(self):
-        return ''
+        gate_string = ''
+        for gate in self._gateMapper:
+            gate_string += f"{self._gateKeeper[gate]}"
+
+            for connection in self._gateMapper[gate]:
+                pin_connections = [f"{pin.o_pin} -> {pin.i_pin}" for pin in self._gateMapper[gate][connection]]
+                gate_string += f"\n\tConnection to '{connection}' on pins: {pin_connections}"
+
+            gate_string += "\n"
+        return gate_string
 
 def main():
-    gate1 = LogicGate("G1", ['A', 'B'], ['O'])
-    gate2 = LogicGate("G2", ['A', 'B'], ['O'])
-    print(gate1)
-    print(gate2)
+    gate_manager = LogicGateManager()
+    gate_manager.add_gate(type='GATE', name="G1", inputs=['A', 'B'], outputs=['O'])
+    gate_manager.add_gate(type='GATE', name="G2", inputs=['A', 'B'], outputs=['O'])
+
+    gate_manager.add_connection(GatePin("G1", 'O'), GatePin("G2", 'A'))
+    gate_manager.add_connection(GatePin("G1", 'O'), GatePin("G2", 'B'))
+
+    print(gate_manager)
 
 main()
