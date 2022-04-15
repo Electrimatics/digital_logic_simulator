@@ -31,7 +31,9 @@ ALLOWED_HOSTS = []
 
 # Application definition
 
+#'logicsim', Copy and paste than in 2 lines below
 INSTALLED_APPS = [
+    'logicsim',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
