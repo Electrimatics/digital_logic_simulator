@@ -17,4 +17,4 @@ class logicsimTest(TestCase):
         context = {
           'logicsim':logicsim,
         }
-        response = render(request, 'logicsim/index.html', context=context)
+        return render(request, 'logicsim/displaytest.html', context=context)
