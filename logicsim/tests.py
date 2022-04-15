@@ -27,3 +27,4 @@ class logicsimTest(TestCase):
            'logicsim':logicsim,
         }
         return render(request, 'logicsim/buttonTest.html', context=context)
+
