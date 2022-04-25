@@ -28,9 +28,13 @@ class PinCollection:
     def pins(self) -> dict:
         return self._pins
 
-    # Returns the name and status of a pin using the PinCollection[key] operation
+    # Returns the pin's value using the PinCollection[key] operation
     def __getitem__(self, name : str) -> collections.namedtuple:
-        return Pin(self._pins.get(name, ('', -1)))
+        if name in self._pins:
+            return self._pins.get(name)
+        else:
+            raise PinCollectionException(f"A pin with the name {name} does not exist")
+        
 
     # Setes the pin value using the PinCollection[key] = value operation
     def __setitem__(self, name : str, value : int) -> None:
@@ -53,6 +57,9 @@ class PinCollection:
         except KeyError:
             raise PinCollectionException(f"A pin with the name {name} cannot be removed as it does not exist")
         return self
+
+    def get_all_pins(self):
+        return [Pin(key, self._pins[key]) for key in self._pins]
     
     # Called when a PinCollection is printed
     def __repr__(self):
@@ -126,6 +133,60 @@ class LogicGate:
     def __repr__(self):
         return f"Gate '{self.name}' ({self._type}): \n\tInputs: {self._inputs} \n\tOutputs: {self._outputs}"
 
+class ANDGate(LogicGate):
+    def __init__(self, type: str, name: str, inputs: list = ['A', 'B'], outputs: list = ['O']) -> None:
+        super().__init__(type, name, inputs, outputs)
+
+    def _logic(self, *args, **kwargs) -> None:
+        outputs = [pin.name for pin in self._outputs.get_all_pins()]
+        if all([pin.status for pin in self._inputs.get_all_pins()]):
+            output_val = 1
+        else:
+            output_val = 0
+
+        for o in outputs:
+            self._outputs[o] = output_val
+
+class ORGate(LogicGate):
+    def __init__(self, type: str, name: str, inputs: list = ['A', 'B'], outputs: list = ['O']) -> None:
+        super().__init__(type, name, inputs, outputs)
+
+    def _logic(self, *args, **kwargs) -> None:
+        outputs = [pin.name for pin in self._outputs.get_all_pins()]
+        if any([pin.status for pin in self._inputs.get_all_pins()]):
+            output_val = 1
+        else:
+            output_val = 0
+
+        for o in outputs:
+            self._outputs[o] = output_val
+
+class XORGate(LogicGate):
+    def __init__(self, type: str, name: str, inputs: list = ['A', 'B'], outputs: list = ['O']) -> None:
+        super().__init__(type, name, inputs, outputs)
+
+    def _logic(self, *args, **kwargs) -> None:
+        self._outputs['O'] = self._inputs['A'] ^ self._inputs['B']
+
+class NORGate(LogicGate):
+    def __init__(self, type: str, name: str, inputs: list = ['A'], outputs: list = ['O']) -> None:
+        super().__init__(type, name, inputs, outputs)
+
+    def _logic(self, *args, **kwargs) -> None:
+        self._outputs['O'] = abs(self._inputs['A']) - 1
+
+class NANDGate(LogicGate):
+    def __init__(self, type: str, name: str, inputs: list = [], outputs: list = []) -> None:
+        super().__init__(type, name, inputs, outputs)
+
+class NORGate(LogicGate):
+    def __init__(self, type: str, name: str, inputs: list = [], outputs: list = []) -> None:
+        super().__init__(type, name, inputs, outputs)
+
+class XNORGate(LogicGate):
+    def __init__(self, type: str, name: str, inputs: list = [], outputs: list = []) -> None:
+        super().__init__(type, name, inputs, outputs)
+
 """
 Custom exception type for errors with PinCollections
 """
@@ -187,3 +248,4 @@ class LogicGateManager:
 
             gate_string += "\n"
         return gate_string
+
