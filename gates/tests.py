@@ -50,3 +50,17 @@ class TestGenericLogicGate(TestCase):
         gate_manager.add_connection(GatePin(name1, 'O'), GatePin(name2, 'A'))
 
         self.assertEqual(gate_manager.connections, expected_connections)
+
+class testANDGate(TestCase):
+    def testBothTrue(self):
+        gate = ANDGate("AND", "A1")
+
+        gate.set_input('A')
+        gate.set_input('B')
+
+        expected_output = {'O', 1}
+        gate._logic()
+
+        self.assertEqual(gate.outputs, expected_output)
+
+        
