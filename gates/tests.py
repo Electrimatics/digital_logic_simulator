@@ -51,16 +51,31 @@ class TestGenericLogicGate(TestCase):
 
         self.assertEqual(gate_manager.connections, expected_connections)
 
-class testANDGate(TestCase):
+class TestANDGate(TestCase):
     def testBothTrue(self):
         gate = ANDGate("AND", "A1")
-
         gate.set_input('A')
         gate.set_input('B')
 
-        expected_output = {'O', 1}
+        expected_output = {'O': 1}
         gate._logic()
 
-        self.assertEqual(gate.outputs, expected_output)
+        self.assertEqual(gate.outputs.pins, expected_output)
 
+    def testOneFalse(self):
+        gate = ANDGate("AND", "A1")
+        gate.set_input('A')
+
+        expected_output = {'O': 0}
+        gate._logic()
+
+        self.assertEqual(gate.outputs.pins, expected_output)
+
+    def testBothFalse(self):
+        gate = ANDGate("AND", "A1")
         
+        expected_output = {'O': 0}
+        gate._logic()
+
+        self.assertEqual(gate.outputs.pins, expected_output)
+
