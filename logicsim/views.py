@@ -19,3 +19,8 @@ def add(request):
     fact = LogicGate(gate_type=fact_text, image_url=image_url)
     fact.save()
     return HttpResponseRedirect(reverse('index'))
+
+def delete(request, id):
+    ob = LogicGate.objects.get(id=id)
+    ob.delete()
+    return HttpResponseRedirect(reverse('index'))
