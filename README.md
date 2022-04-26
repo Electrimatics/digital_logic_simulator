@@ -19,7 +19,11 @@ The required python packages are found in the [requirements.txt](./requirements.
 ```bash
 pip install -r requirements.txt
 ```
-No additional configuration is necessary.
+Installing gunicorn may fail on building the psycopg2 binary.  If the install fails, run
+```bash
+sudo apt install libpq-dev python3-dev
+```
+and try installing the dependencies again.
 
 Additionally, in order to run the web application and test suite,
 you must create a `.env` file in the same directory as `manage.py` with the following information:
