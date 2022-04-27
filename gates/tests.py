@@ -106,3 +106,31 @@ class TestORGate(TestCase):
         gate._logic()
 
         self.assertEqual(gate.outputs.pins, expected_output)
+
+class TestXORGate(TestCase):
+    def testBothTrue(self):
+        gate = XORGate("XOR", "X1")
+        gate.set_input('A')
+        gate.set_input('B')
+
+        expected_output = {'O': 0}
+        gate._logic()
+
+        self.assertEqual(gate.outputs.pins, expected_output)
+
+    def testOneFalse(self):
+        gate = XORGate("XOR", "X1")
+        gate.set_input('A')
+
+        expected_output = {'O': 1}
+        gate._logic()
+
+        self.assertEqual(gate.outputs.pins, expected_output)
+
+    def testBothFalse(self):
+        gate = XORGate("XOR", "X1")
+        
+        expected_output = {'O': 0}
+        gate._logic()
+
+        self.assertEqual(gate.outputs.pins, expected_output)
