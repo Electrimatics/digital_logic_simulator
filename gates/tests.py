@@ -1,3 +1,4 @@
+from statistics import NormalDist
 from django.test import TestCase
 import json
 from gates.logic_gates import *
@@ -131,6 +132,24 @@ class TestXORGate(TestCase):
         gate = XORGate("XOR", "X1")
         
         expected_output = {'O': 0}
+        gate._logic()
+
+        self.assertEqual(gate.outputs.pins, expected_output)
+
+class TestNORGate(TestCase):
+    def testTrue(self):
+        gate = NORGate("NOR", "N1")
+        gate.set_input('A')
+
+        expected_output = {'O', 0}
+        gate._logic()
+
+        self.assertEqual(gate.outputs.pins, expected_output)
+
+    def testFales(self):
+        gate = NORGate("NOR", "N1")
+
+        expected_output = {'O', 1}
         gate._logic()
 
         self.assertEqual(gate.outputs.pins, expected_output)
