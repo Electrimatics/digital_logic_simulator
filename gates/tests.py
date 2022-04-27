@@ -136,20 +136,20 @@ class TestXORGate(TestCase):
 
         self.assertEqual(gate.outputs.pins, expected_output)
 
-class TestNORGate(TestCase):
+class TestNOTGate(TestCase):
     def testTrue(self):
-        gate = NORGate("NOR", "N1")
+        gate = NOTGate("NOR", "N1")
         gate.set_input('A')
 
-        expected_output = {'O', 0}
+        expected_output = {'O': 0}
         gate._logic()
 
         self.assertEqual(gate.outputs.pins, expected_output)
 
     def testFales(self):
-        gate = NORGate("NOR", "N1")
+        gate = NOTGate("NOR", "N1")
 
-        expected_output = {'O', 1}
+        expected_output = {'O': 1}
         gate._logic()
 
         self.assertEqual(gate.outputs.pins, expected_output)

@@ -168,12 +168,12 @@ class XORGate(LogicGate):
     def _logic(self, *args, **kwargs) -> None:
         self._outputs['O'] = self._inputs['A'] ^ self._inputs['B']
 
-class NORGate(LogicGate):
+class NOTGate(LogicGate):
     def __init__(self, type: str, name: str, inputs: list = ['A'], outputs: list = ['O']) -> None:
         super().__init__(type, name, inputs, outputs)
 
     def _logic(self, *args, **kwargs) -> None:
-        self._outputs['O'] = abs(self._inputs['A']) - 1
+        self._outputs['O'] = abs(self._inputs['A'] - 1)
 
 class NANDGate(LogicGate):
     def __init__(self, type: str, name: str, inputs: list = [], outputs: list = []) -> None:
@@ -208,7 +208,7 @@ class XNORGate(LogicGate):
         super().__init__(type, name, inputs, outputs)
 
     def _logic(self, *args, **kwargs) -> None:
-        self._outputs['O'] = abs(self._inputs['A'] ^ self._inputs['B']) - 1
+        self._outputs['O'] = abs(self._inputs['A'] ^ self._inputs['B'] - 1)
 
 """
 Custom exception type for errors with PinCollections
