@@ -1,6 +1,5 @@
 from statistics import NormalDist
 from django.test import TestCase
-import json
 from gates.logic_gates import *
 
 class TestGenericLogicGate(TestCase):

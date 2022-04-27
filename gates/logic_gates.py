@@ -133,6 +133,11 @@ class LogicGate:
     def __repr__(self):
         return f"Gate '{self.name}' ({self._type}): \n\tInputs: {self._inputs} \n\tOutputs: {self._outputs}"
 
+'''
+Class to implement the AND gate.
+
+Can support an arbitrary number of inputs into 1 output.
+'''
 class ANDGate(LogicGate):
     def __init__(self, type: str, name: str, inputs: list = ['A', 'B'], outputs: list = ['O']) -> None:
         super().__init__(type, name, inputs, outputs)
@@ -147,6 +152,11 @@ class ANDGate(LogicGate):
         for o in outputs:
             self._outputs[o] = output_val
 
+'''
+Class to implement the OR gate.
+
+Can support an arbitrary number of inputs into 1 output.
+'''
 class ORGate(LogicGate):
     def __init__(self, type: str, name: str, inputs: list = ['A', 'B'], outputs: list = ['O']) -> None:
         super().__init__(type, name, inputs, outputs)
@@ -161,6 +171,11 @@ class ORGate(LogicGate):
         for o in outputs:
             self._outputs[o] = output_val
 
+'''
+Class to implement the XOR gate.
+
+Can support 2 inputs into 1 output.
+'''
 class XORGate(LogicGate):
     def __init__(self, type: str, name: str, inputs: list = ['A', 'B'], outputs: list = ['O']) -> None:
         super().__init__(type, name, inputs, outputs)
@@ -168,13 +183,24 @@ class XORGate(LogicGate):
     def _logic(self, *args, **kwargs) -> None:
         self._outputs['O'] = self._inputs['A'] ^ self._inputs['B']
 
+'''
+Class to implement the NOT gate.
+
+Can support 1 input into 1 output.
+'''
 class NOTGate(LogicGate):
     def __init__(self, type: str, name: str, inputs: list = ['A'], outputs: list = ['O']) -> None:
         super().__init__(type, name, inputs, outputs)
 
     def _logic(self, *args, **kwargs) -> None:
+        # This is a quick way to switch a bit from 0 -> 1 or 1 -> 0
         self._outputs['O'] = abs(self._inputs['A'] - 1)
 
+'''
+Class to implement the NAND gate.
+
+Can support an arbitrary number of inputs into 1 output.
+'''
 class NANDGate(ANDGate, LogicGate):
     def __init__(self, type: str, name: str, inputs: list = ['A', 'B'], outputs: list = ['O']) -> None:
         super().__init__(type, name, inputs, outputs)
@@ -183,6 +209,11 @@ class NANDGate(ANDGate, LogicGate):
         super()._logic(args, kwargs)
         self._outputs['O'] = abs(self._outputs['O'] - 1)
 
+'''
+Class to implement the NOR gate.
+
+Can support an arbitrary number of inputs into 1 output.
+'''
 class NORGate(ORGate, LogicGate):
     def __init__(self, type: str, name: str, inputs: list = ['A', 'B'], outputs: list = ['O']) -> None:
         super().__init__(type, name, inputs, outputs)
@@ -191,6 +222,11 @@ class NORGate(ORGate, LogicGate):
         super()._logic(args, kwargs)
         self._outputs['O'] = abs(self._outputs['O'] - 1)
 
+'''
+Class to implement the XNOR gate.
+
+Can support 2 inputs into 1 output.
+'''
 class XNORGate(XORGate, LogicGate):
     def __init__(self, type: str, name: str, inputs: list = ['A', 'B'], outputs: list = ['O']) -> None:
         super().__init__(type, name, inputs, outputs)
