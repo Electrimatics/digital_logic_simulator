@@ -39,7 +39,7 @@ class PinCollection:
     # Setes the pin value using the PinCollection[key] = value operation
     def __setitem__(self, name : str, value : int) -> None:
         if abs(value) > 1:
-            raise PinCollectionException(f"A pin cannot be set to value {value}. Must be 0 or 1")
+            raise PinCollectionException(f"A pin ({name}) cannot be set to value {value}. Must be 0 or 1")
         if name in self._pins:
             self._pins[name] = value
         else:
@@ -175,40 +175,29 @@ class NOTGate(LogicGate):
     def _logic(self, *args, **kwargs) -> None:
         self._outputs['O'] = abs(self._inputs['A'] - 1)
 
-class NANDGate(LogicGate):
-    def __init__(self, type: str, name: str, inputs: list = [], outputs: list = []) -> None:
+class NANDGate(ANDGate, LogicGate):
+    def __init__(self, type: str, name: str, inputs: list = ['A', 'B'], outputs: list = ['O']) -> None:
         super().__init__(type, name, inputs, outputs)
 
     def _logic(self, *args, **kwargs) -> None:
-        outputs = [pin.name for pin in self._outputs.get_all_pins()]
-        if all([pin.status for pin in self._inputs.get_all_pins()]):
-            output_val = 0
-        else:
-            output_val = 1
+        super()._logic(args, kwargs)
+        self._outputs['O'] = abs(self._outputs['O'] - 1)
 
-        for o in outputs:
-            self._outputs[o] = output_val
-
-class NORGate(LogicGate):
-    def __init__(self, type: str, name: str, inputs: list = [], outputs: list = []) -> None:
+class NORGate(ORGate, LogicGate):
+    def __init__(self, type: str, name: str, inputs: list = ['A', 'B'], outputs: list = ['O']) -> None:
         super().__init__(type, name, inputs, outputs)
 
     def _logic(self, *args, **kwargs) -> None:
-        outputs = [pin.name for pin in self._outputs.get_all_pins()]
-        if any([pin.status for pin in self._inputs.get_all_pins()]):
-            output_val = 0
-        else:
-            output_val = 1
+        super()._logic(args, kwargs)
+        self._outputs['O'] = abs(self._outputs['O'] - 1)
 
-        for o in outputs:
-            self._outputs[o] = output_val
-
-class XNORGate(LogicGate):
-    def __init__(self, type: str, name: str, inputs: list = [], outputs: list = []) -> None:
+class XNORGate(XORGate, LogicGate):
+    def __init__(self, type: str, name: str, inputs: list = ['A', 'B'], outputs: list = ['O']) -> None:
         super().__init__(type, name, inputs, outputs)
 
     def _logic(self, *args, **kwargs) -> None:
-        self._outputs['O'] = abs(self._inputs['A'] ^ self._inputs['B'] - 1)
+        super()._logic(args, kwargs)
+        self._outputs['O'] = abs(self._outputs['O'] - 1)
 
 """
 Custom exception type for errors with PinCollections
