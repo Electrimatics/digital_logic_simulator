@@ -79,3 +79,30 @@ class TestANDGate(TestCase):
 
         self.assertEqual(gate.outputs.pins, expected_output)
 
+class TestORGate(TestCase):
+    def testBothTrue(self):
+        gate = ORGate("OR", "O1")
+        gate.set_input('A')
+        gate.set_input('B')
+
+        expected_output = {'O': 1}
+        gate._logic()
+
+        self.assertEqual(gate.outputs.pins, expected_output)
+
+    def testOneFalse(self):
+        gate = ORGate("OR", "O1")
+        gate.set_input('A')
+
+        expected_output = {'O': 1}
+        gate._logic()
+
+        self.assertEqual(gate.outputs.pins, expected_output)
+
+    def testBothFalse(self):
+        gate = ORGate("OR", "O1")
+        
+        expected_output = {'O': 0}
+        gate._logic()
+
+        self.assertEqual(gate.outputs.pins, expected_output)
