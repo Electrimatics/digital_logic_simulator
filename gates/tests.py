@@ -50,3 +50,13 @@ class TestGenericLogicGate(TestCase):
         gate_manager.add_connection(GatePin(name1, 'O'), GatePin(name2, 'A'))
 
         self.assertEqual(gate_manager.connections, expected_connections)
+
+class TestClock(TestCase):
+    # This test sometimes fails due to a bug in the threaded clock and scanner code
+    def test_clock_pulse(self):
+        manager = LogicGateManager()
+        clock = Clock(frequency=1)
+        manager.clock = clock
+        pulse_count = manager.start_clock(max_cycles=10)
+
+        self.assertEqual(pulse_count, 10)
