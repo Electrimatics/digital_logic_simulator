@@ -28,6 +28,25 @@ class logicsimTest(TestCase):
         }
         return render(request, 'logicsim/buttonTest.html', context=context)
 
+    def test_update_element(self):
+        and_gate = LogicGate(gate_type="and", image_url=".jpg")
+        and_gate.save()
+        self.assertEqual(and_gate.gate_type, "and")
+       
+        and_gate.gate_type = "or"
+        and_gate.image_url = ".png"
+        and_gate.save()
+        self.assertEqual(and_gate.gate_type, "or")
+        self.assertEqual(and_gate.image_url, ".png")
+
+    def test_delete_element(self):
+        and_gate = LogicGate(gate_type="and", image_url=".jpg")
+        and_gate.save()
+        self.assertEqual(len(LogicGate.objects.all()), 1)
+        
+        and_gate.delete()
+        self.assertEqual(len(LogicGate.objects.all()), 0)
+
     def test_add_database(self):
         gate = LogicGate(gate_type="or gate", image_url = "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4c/Or-gate-en.svg/500px-Or-gate-en.svg.png?20060601172209")
         gate.save()
@@ -59,6 +78,4 @@ class logicsimTest(TestCase):
         self.assertNotEqual(gate4.gate_type, "or gate")
         self.assertEqual(gate4.gate_type, "")
         gate4.delete()
-
-  
 
