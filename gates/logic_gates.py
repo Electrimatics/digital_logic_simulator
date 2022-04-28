@@ -47,7 +47,6 @@ class Clock(threading.Thread):
         global clock_cycles
 
         while(clock_cycles > 0):
-            print("cycling")
             time.sleep(1/self._frequency)
             with tlock:
                 self._send_pulse = 1;
@@ -221,7 +220,6 @@ class LogicGateManager:
         while clock_cycles > 0:
             if self._clock.send_pulse:
                 with tlock:
-                    print("Pulse detected")
                     pulse_count += 1
                     self._clock.send_pulse = 0
 
@@ -231,16 +229,17 @@ class LogicGateManager:
         if not self._clock:
             raise LogicGateManagerException(f"No clock is attached to this LogicGateManager")
 
-        global clock_cycles;
+        global clock_cycles, pulse_count
         clock_cycles = max_cycles
 
         scanner = threading.Thread(target=self._scan_for_pulse, args=())
         scanner.start()
-        time.sleep(0.01)
         self._clock.start()
 
         self._clock.join()
         scanner.join()
+
+        return pulse_count
 
     # Returns a LogicGate with the specified name using the LogicGateManager[key] operation
     def __getitem__(self, name : str) -> LogicGate:
@@ -277,14 +276,3 @@ class LogicGateManager:
 
             gate_string += "\n"
         return gate_string
-
-def main():
-    manager = LogicGateManager()
-    manager.add_gate(LogicGate("GATE", "G", ['A', 'B'], ['O']))
-    clock = Clock(frequency=1)
-    manager.clock = clock
-    manager.start_clock(max_cycles=10)
-
-    print(pulse_count)
-
-main()
