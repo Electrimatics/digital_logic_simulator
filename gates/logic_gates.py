@@ -7,6 +7,10 @@ Pin = collections.namedtuple("Pin", ('name', 'status'))
 GatePin = collections.namedtuple("GatePin", ('gate', 'pin'))
 PinConnection = collections.namedtuple("PinConnection", ('o_pin', 'i_pin'))
 
+tlock = threading.Lock()
+clock_cycles = -1;
+pulse_count = 0;
+
 # TODO: Convert this to a django model
 
 """
@@ -14,8 +18,9 @@ Clock class to send a pulse through the logic gates at a specified frequency.
 
 Defaults to 1 Hz
 """
-class Clock():
+class Clock(threading.Thread):
     def __init__(self, frequency = 1) -> None:
+        super().__init__()
         self._clock = None
         self._frequency = frequency
         self._send_pulse = 0
@@ -38,24 +43,18 @@ class Clock():
     def send_pulse(self, pulse):
         self._send_pulse = pulse
 
-    @property
-    def is_running(self) -> bool:
-        if self._clock:
-            return self._clock.is_alive
-        else:
-            return False;
+    def run(self):
+        global clock_cycles
 
-    def start_clock(self, max_cycles = -1):
-        self._clock = threading.Thread(target=self._clock_cycle, args=(max_cycles,), daemon=True)
-        self._clock.start()
-        self._clock.join()
-
-    def _clock_cycle(self, max_cycles = -1):
-        while(max_cycles > 0):
+        while(clock_cycles > 0):
+            print("cycling")
             time.sleep(1/self._frequency)
-            self._send_pulse = 1;
-            if(max_cycles > 0):
-                max_cycles -= 1
+            with tlock:
+                self._send_pulse = 1;
+            if(clock_cycles >= 0):
+                clock_cycles -= 1
+
+        self._clock = None
         
 """
 Custom exception type for errors with PinCollections
@@ -198,14 +197,50 @@ class LogicGateManager:
     def __init__(self) -> None:
         self._gateMapper = {}
         self._gateKeeper = {}
+        self._clock = None
 
     @property
     def connections(self) -> dict:
         return self._gateMapper
 
     @property
-    def clocks(self) -> list:
+    def clock(self) -> list:
         return self._clocks
+
+    @clock.setter
+    def clock(self, clock : Clock):
+        if type(clock) != Clock:
+            raise TypeError(f"A clock must be of type Clock, not {type(clock)}")
+        self._clock = clock
+
+    # Method to scan for an active clock pulse. Should be put in a thread
+    def _scan_for_pulse(self):
+        global clock_cycles, pulse_count
+
+        # If a clock pulse is detected, set it back to 0 to acknowledge it
+        while clock_cycles > 0:
+            if self._clock.send_pulse:
+                with tlock:
+                    print("Pulse detected")
+                    pulse_count += 1
+                    self._clock.send_pulse = 0
+
+    # Start the clock and the associated scanner to scan for clock pulses. These pulses will be sent into
+    # the circuit
+    def start_clock(self, max_cycles = -1):
+        if not self._clock:
+            raise LogicGateManagerException(f"No clock is attached to this LogicGateManager")
+
+        global clock_cycles;
+        clock_cycles = max_cycles
+
+        scanner = threading.Thread(target=self._scan_for_pulse, args=())
+        scanner.start()
+        time.sleep(0.01)
+        self._clock.start()
+
+        self._clock.join()
+        scanner.join()
 
     # Returns a LogicGate with the specified name using the LogicGateManager[key] operation
     def __getitem__(self, name : str) -> LogicGate:
@@ -247,12 +282,9 @@ def main():
     manager = LogicGateManager()
     manager.add_gate(LogicGate("GATE", "G", ['A', 'B'], ['O']))
     clock = Clock(frequency=1)
-    clock.start_clock(10)
+    manager.clock = clock
+    manager.start_clock(max_cycles=10)
 
-    print("here")
-    while clock.is_running:
-        if clock.send_pulse:
-            print("Sending pulse")
-            clock.send_pulse = 0
+    print(pulse_count)
 
 main()
