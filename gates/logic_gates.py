@@ -1,4 +1,7 @@
 import collections
+import threading
+import time
+from typing import Type
 
 Pin = collections.namedtuple("Pin", ('name', 'status'))
 GatePin = collections.namedtuple("GatePin", ('gate', 'pin'))
@@ -6,6 +9,54 @@ PinConnection = collections.namedtuple("PinConnection", ('o_pin', 'i_pin'))
 
 # TODO: Convert this to a django model
 
+"""
+Clock class to send a pulse through the logic gates at a specified frequency.
+
+Defaults to 1 Hz
+"""
+class Clock():
+    def __init__(self, frequency = 1) -> None:
+        self._clock = None
+        self._frequency = frequency
+        self._send_pulse = 0
+
+    @property
+    def frequency(self):
+        return self._frequency
+
+    @frequency.setter
+    def frequency(self, frequency : int) -> None:
+        if(type(frequency) != int):
+            raise TypeError(f"Frequency can only be of type int, not {type(frequency)}")
+        self._frequency = frequency
+
+    @property
+    def send_pulse(self) -> int:
+        return self._send_pulse
+
+    @send_pulse.setter
+    def send_pulse(self, pulse):
+        self._send_pulse = pulse
+
+    @property
+    def is_running(self) -> bool:
+        if self._clock:
+            return self._clock.is_alive
+        else:
+            return False;
+
+    def start_clock(self, max_cycles = -1):
+        self._clock = threading.Thread(target=self._clock_cycle, args=(max_cycles,), daemon=True)
+        self._clock.start()
+        self._clock.join()
+
+    def _clock_cycle(self, max_cycles = -1):
+        while(max_cycles > 0):
+            time.sleep(1/self._frequency)
+            self._send_pulse = 1;
+            if(max_cycles > 0):
+                max_cycles -= 1
+        
 """
 Custom exception type for errors with PinCollections
 """
@@ -149,17 +200,21 @@ class LogicGateManager:
         self._gateKeeper = {}
 
     @property
-    def connections(self):
-        return self._gateMapper;
+    def connections(self) -> dict:
+        return self._gateMapper
+
+    @property
+    def clocks(self) -> list:
+        return self._clocks
 
     # Returns a LogicGate with the specified name using the LogicGateManager[key] operation
     def __getitem__(self, name : str) -> LogicGate:
         return self._gateKeeper.get(name)
 
     # Adds a gate to the manager
-    def add_gate(self, type : str, name : str, inputs : list = [], outputs : list = []) -> None:
-        self._gateKeeper.update({name: LogicGate(type, name, inputs, outputs)})
-        self._gateMapper.update({name:{}})
+    def add_gate(self, gate) -> None:
+        self._gateKeeper.update({gate.name: gate})
+        self._gateMapper.update({gate.name:{}})
 
     # Removes a gate from the manager
     def remove_gate(self, name):
@@ -187,3 +242,17 @@ class LogicGateManager:
 
             gate_string += "\n"
         return gate_string
+
+def main():
+    manager = LogicGateManager()
+    manager.add_gate(LogicGate("GATE", "G", ['A', 'B'], ['O']))
+    clock = Clock(frequency=1)
+    clock.start_clock(10)
+
+    print("here")
+    while clock.is_running:
+        if clock.send_pulse:
+            print("Sending pulse")
+            clock.send_pulse = 0
+
+main()
