@@ -27,8 +27,8 @@
     <p>
         Logic Gate Simulator <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4c/Or-gate-en.svg/500px-Or-gate-en.svg.png?20060601172209"
         <ol>
-            {% for fact in facts %}
-            <li><img src="{{fact.image_url}}"/ height="100px"> <br/> {{ fact.logic_gate }} </li>
+            {% for gate in logicsim %}
+            <li><img src="{{gate.image_url}}"/ height="100px"> <br/> {{ gate.gate_type }} </li>
             {% endfor %}
         </ol>
     </p>
