@@ -29,7 +29,8 @@ class LogicGate(models.Model):
     gate_type = models.CharField(max_length=9,
                                  choices=gate_choices,
                                  default="AND")
-
+    #indexes of inputs and outputs, needs to be reworked to be relational maybe?
+    #or based on how custom components work
     input_a = models.IntegerField()
     input_b = models.IntegerField()
     output = models.IntegerField()

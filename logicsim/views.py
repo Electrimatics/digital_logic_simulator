@@ -6,6 +6,22 @@ from django.urls import reverse
 # Create your views here.
 from logicsim.models import LogicGate
 
+def createGate(request):
+    logicsim = LogicGate.objects.filter()
+    context = {
+        'logicsim': logicsim,
+    }
+    if request.method == 'GATE':
+        if request.GATE.get('gate'):
+            gate = LogicGate()
+            gate.gate_type = request.GATE.get('gate')
+            gate.input_a = request.GATE.get('input1')
+            gate.input_b = request.GATE.get('input2')
+            gate.save()
+            return render(request, 'logicsim/UserInput.html', context=context)
+    else:
+        return render(request, 'logicsim/UserInput.html')
+
 def index(request):
     logicsim = LogicGate.objects.filter()
     context = {
@@ -20,15 +36,3 @@ def add(request):
     fact.save()
     return HttpResponseRedirect(reverse('index'))
 
-def createGate(request):
-
-    if request.method == 'GATE':
-        if request.GATE.get('gate'):
-            gate = LogicGate()
-            gate.gate_type = request.GATE.get('gate')
-            gate.input_a = request.GATE.get('input1')
-            gate.input_b = request.GATE.get('input2')
-            gate.save()
-            return render(request, 'logicsim/UserInput.html')
-    else:
-        return render(request, 'logicsim/UserInput.html')
