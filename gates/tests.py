@@ -51,8 +51,6 @@ class TestGenericLogicGate(TestCase):
 
         self.assertEqual(gate_manager.connections, expected_connections)
 
-
-
 class TestANDGate(TestCase):
     def testBothTrue(self):
         gate = ANDGate("AND", "A1")
@@ -238,3 +236,13 @@ class TestXNORGate(TestCase):
         gate._logic()
 
         self.assertEqual(gate.outputs.pins, expected_output)
+
+class TestClock(TestCase):
+    # This test sometimes fails due to a bug in the threaded clock and scanner code
+    def test_clock_pulse(self):
+        manager = LogicGateManager()
+        clock = Clock(frequency=1)
+        manager.clock = clock
+        pulse_count = manager.start_clock(max_cycles=10)
+
+        self.assertEqual(pulse_count, 10)
