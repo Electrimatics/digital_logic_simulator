@@ -1,11 +1,60 @@
 import collections
+import threading
+import time
+from typing import Type
 
 Pin = collections.namedtuple("Pin", ('name', 'status'))
 GatePin = collections.namedtuple("GatePin", ('gate', 'pin'))
 PinConnection = collections.namedtuple("PinConnection", ('o_pin', 'i_pin'))
 
+tlock = threading.Lock()
+clock_cycles = -1;
+pulse_count = 0;
+
 # TODO: Convert this to a django model
 
+"""
+Clock class to send a pulse through the logic gates at a specified frequency.
+
+Defaults to 1 Hz
+"""
+class Clock(threading.Thread):
+    def __init__(self, frequency = 1) -> None:
+        super().__init__()
+        self._clock = None
+        self._frequency = frequency
+        self._send_pulse = 0
+
+    @property
+    def frequency(self):
+        return self._frequency
+
+    @frequency.setter
+    def frequency(self, frequency : int) -> None:
+        if(type(frequency) != int):
+            raise TypeError(f"Frequency can only be of type int, not {type(frequency)}")
+        self._frequency = frequency
+
+    @property
+    def send_pulse(self) -> int:
+        return self._send_pulse
+
+    @send_pulse.setter
+    def send_pulse(self, pulse):
+        self._send_pulse = pulse
+
+    def run(self):
+        global clock_cycles
+
+        while(clock_cycles > 0):
+            time.sleep(1/self._frequency)
+            with tlock:
+                self._send_pulse = 1;
+            if(clock_cycles >= 0):
+                clock_cycles -= 1
+
+        self._clock = None
+        
 """
 Custom exception type for errors with PinCollections
 """
@@ -28,14 +77,18 @@ class PinCollection:
     def pins(self) -> dict:
         return self._pins
 
-    # Returns the name and status of a pin using the PinCollection[key] operation
+    # Returns the pin's value using the PinCollection[key] operation
     def __getitem__(self, name : str) -> collections.namedtuple:
-        return Pin(self._pins.get(name, ('', -1)))
+        if name in self._pins:
+            return self._pins.get(name)
+        else:
+            raise PinCollectionException(f"A pin with the name {name} does not exist")
+        
 
     # Setes the pin value using the PinCollection[key] = value operation
     def __setitem__(self, name : str, value : int) -> None:
         if abs(value) > 1:
-            raise PinCollectionException(f"A pin cannot be set to value {value}. Must be 0 or 1")
+            raise PinCollectionException(f"A pin ({name}) cannot be set to value {value}. Must be 0 or 1")
         if name in self._pins:
             self._pins[name] = value
         else:
@@ -53,6 +106,9 @@ class PinCollection:
         except KeyError:
             raise PinCollectionException(f"A pin with the name {name} cannot be removed as it does not exist")
         return self
+
+    def get_all_pins(self):
+        return [Pin(key, self._pins[key]) for key in self._pins]
     
     # Called when a PinCollection is printed
     def __repr__(self):
@@ -126,6 +182,108 @@ class LogicGate:
     def __repr__(self):
         return f"Gate '{self.name}' ({self._type}): \n\tInputs: {self._inputs} \n\tOutputs: {self._outputs}"
 
+'''
+Class to implement the AND gate.
+
+Can support an arbitrary number of inputs into 1 output.
+'''
+class ANDGate(LogicGate):
+    def __init__(self, type: str, name: str, inputs: list = ['A', 'B'], outputs: list = ['O']) -> None:
+        super().__init__(type, name, inputs, outputs)
+
+    def _logic(self, *args, **kwargs) -> None:
+        outputs = [pin.name for pin in self._outputs.get_all_pins()]
+        if all([pin.status for pin in self._inputs.get_all_pins()]):
+            output_val = 1
+        else:
+            output_val = 0
+
+        for o in outputs:
+            self._outputs[o] = output_val
+
+'''
+Class to implement the OR gate.
+
+Can support an arbitrary number of inputs into 1 output.
+'''
+class ORGate(LogicGate):
+    def __init__(self, type: str, name: str, inputs: list = ['A', 'B'], outputs: list = ['O']) -> None:
+        super().__init__(type, name, inputs, outputs)
+
+    def _logic(self, *args, **kwargs) -> None:
+        outputs = [pin.name for pin in self._outputs.get_all_pins()]
+        if any([pin.status for pin in self._inputs.get_all_pins()]):
+            output_val = 1
+        else:
+            output_val = 0
+
+        for o in outputs:
+            self._outputs[o] = output_val
+
+'''
+Class to implement the XOR gate.
+
+Can support 2 inputs into 1 output.
+'''
+class XORGate(LogicGate):
+    def __init__(self, type: str, name: str, inputs: list = ['A', 'B'], outputs: list = ['O']) -> None:
+        super().__init__(type, name, inputs, outputs)
+
+    def _logic(self, *args, **kwargs) -> None:
+        self._outputs['O'] = self._inputs['A'] ^ self._inputs['B']
+
+'''
+Class to implement the NOT gate.
+
+Can support 1 input into 1 output.
+'''
+class NOTGate(LogicGate):
+    def __init__(self, type: str, name: str, inputs: list = ['A'], outputs: list = ['O']) -> None:
+        super().__init__(type, name, inputs, outputs)
+
+    def _logic(self, *args, **kwargs) -> None:
+        # This is a quick way to switch a bit from 0 -> 1 or 1 -> 0
+        self._outputs['O'] = abs(self._inputs['A'] - 1)
+
+'''
+Class to implement the NAND gate.
+
+Can support an arbitrary number of inputs into 1 output.
+'''
+class NANDGate(ANDGate, LogicGate):
+    def __init__(self, type: str, name: str, inputs: list = ['A', 'B'], outputs: list = ['O']) -> None:
+        super().__init__(type, name, inputs, outputs)
+
+    def _logic(self, *args, **kwargs) -> None:
+        super()._logic(args, kwargs)
+        self._outputs['O'] = abs(self._outputs['O'] - 1)
+
+'''
+Class to implement the NOR gate.
+
+Can support an arbitrary number of inputs into 1 output.
+'''
+class NORGate(ORGate, LogicGate):
+    def __init__(self, type: str, name: str, inputs: list = ['A', 'B'], outputs: list = ['O']) -> None:
+        super().__init__(type, name, inputs, outputs)
+
+    def _logic(self, *args, **kwargs) -> None:
+        super()._logic(args, kwargs)
+        self._outputs['O'] = abs(self._outputs['O'] - 1)
+
+'''
+Class to implement the XNOR gate.
+
+Can support 2 inputs into 1 output.
+'''
+class XNORGate(XORGate, LogicGate):
+    def __init__(self, type: str, name: str, inputs: list = ['A', 'B'], outputs: list = ['O']) -> None:
+        super().__init__(type, name, inputs, outputs)
+
+    def _logic(self, *args, **kwargs) -> None:
+        super()._logic(args, kwargs)
+        self._outputs['O'] = abs(self._outputs['O'] - 1)
+
 """
 Custom exception type for errors with PinCollections
 """
@@ -147,19 +305,59 @@ class LogicGateManager:
     def __init__(self) -> None:
         self._gateMapper = {}
         self._gateKeeper = {}
+        self._clock = None
 
     @property
-    def connections(self):
-        return self._gateMapper;
+    def connections(self) -> dict:
+        return self._gateMapper
+
+    @property
+    def clock(self) -> list:
+        return self._clocks
+
+    @clock.setter
+    def clock(self, clock : Clock):
+        if type(clock) != Clock:
+            raise TypeError(f"A clock must be of type Clock, not {type(clock)}")
+        self._clock = clock
+
+    # Method to scan for an active clock pulse. Should be put in a thread
+    def _scan_for_pulse(self):
+        global clock_cycles, pulse_count
+
+        # If a clock pulse is detected, set it back to 0 to acknowledge it
+        while clock_cycles > 0:
+            if self._clock.send_pulse:
+                with tlock:
+                    pulse_count += 1
+                    self._clock.send_pulse = 0
+
+    # Start the clock and the associated scanner to scan for clock pulses. These pulses will be sent into
+    # the circuit
+    def start_clock(self, max_cycles = -1):
+        if not self._clock:
+            raise LogicGateManagerException(f"No clock is attached to this LogicGateManager")
+
+        global clock_cycles, pulse_count
+        clock_cycles = max_cycles
+
+        scanner = threading.Thread(target=self._scan_for_pulse, args=())
+        scanner.start()
+        self._clock.start()
+
+        self._clock.join()
+        scanner.join()
+
+        return pulse_count
 
     # Returns a LogicGate with the specified name using the LogicGateManager[key] operation
     def __getitem__(self, name : str) -> LogicGate:
         return self._gateKeeper.get(name)
 
     # Adds a gate to the manager
-    def add_gate(self, type : str, name : str, inputs : list = [], outputs : list = []) -> None:
-        self._gateKeeper.update({name: LogicGate(type, name, inputs, outputs)})
-        self._gateMapper.update({name:{}})
+    def add_gate(self, gate) -> None:
+        self._gateKeeper.update({gate.name: gate})
+        self._gateMapper.update({gate.name:{}})
 
     # Removes a gate from the manager
     def remove_gate(self, name):
@@ -187,3 +385,4 @@ class LogicGateManager:
 
             gate_string += "\n"
         return gate_string
+
