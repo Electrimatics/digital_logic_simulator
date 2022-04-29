@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+.gengate {
+  float: left;
+  width: 100px;
+  height: 35px;
+  margin: 10px;
+  padding: 10px;
+  border: 1px solid black;
+}
+</style>
+
+<style>
+.andgate {
+  float: left;
+  width: 100px;
+  height: 35px;
+  margin: 10px;
+  padding: 10px;
+  border: 1px solid black;
+}
+</style>
+
+<style>
+.orgate {
+  float: left;
+  width: 100px;
+  height: 35px;
+  margin: 10px;
+  padding: 10px;
+  border: 1px solid black;
+}
+</style>
+
+<style>
+.notgate {
+  float: left;
+  width: 100px;
+  height: 35px;
+  margin: 10px;
+  padding: 10px;
+  border: 1px solid black;
+}
+</style>
+
+<style>
+.norgate {
+  float: left;
+  width: 100px;
+  height: 35px;
+  margin: 10px;
+  padding: 10px;
+  border: 1px solid black;
+}
+</style>
+
+<style>
+.xorgate {
+  float: left;
+  width: 100px;
+  height: 35px;
+  margin: 10px;
+  padding: 10px;
+  border: 1px solid black;
+}
+</style>
+
+
+<style>
+.nandgate {
+  float: left;
+  width: 100px;
+  height: 35px;
+  margin: 10px;
+  padding: 10px;
+  border: 1px solid black;
+}
+</style>
+
+
+
+<style>
+.xnorgate {
+  float: left;
+  width: 100px;
+  height: 35px;
+  margin: 10px;
+  padding: 10px;
+  border: 1px solid black;
+}
+</style>
+
+</head>
+<body>
+
+<div class="gengate">
+<h2>GEN</h2>
+</div>
+
+<div class="andgate">
+<h2>AND</h2>
+</div>
+
+<div class="orgate">
+<h2>OR</h2>
+</div>
+
+<div class="notgate">
+<h2>NOT</h2>
+</div>
+
+<div class="xorgate">
+<h2>XOR</h2>
+</div>
+
+<div class="nandgate">
+<h2>NAND</h2>
+</div>
+
+<div class="norgate">
+<h2>NOR</h2>
+</div>
+
+<div class="xnorgate">
+<h2>XNOR</h2>
+</div>
+
+</body>
+</html>
