@@ -1,5 +1,5 @@
+from statistics import NormalDist
 from django.test import TestCase
-import json
 from gates.logic_gates import *
 
 class TestGenericLogicGate(TestCase):
@@ -50,6 +50,192 @@ class TestGenericLogicGate(TestCase):
         gate_manager.add_connection(GatePin(name1, 'O'), GatePin(name2, 'A'))
 
         self.assertEqual(gate_manager.connections, expected_connections)
+
+class TestANDGate(TestCase):
+    def testBothTrue(self):
+        gate = ANDGate("AND", "A1")
+        gate.set_input('A')
+        gate.set_input('B')
+
+        expected_output = {'O': 1}
+        gate._logic()
+
+        self.assertEqual(gate.outputs.pins, expected_output)
+
+    def testOneFalse(self):
+        gate = ANDGate("AND", "A1")
+        gate.set_input('A')
+
+        expected_output = {'O': 0}
+        gate._logic()
+
+        self.assertEqual(gate.outputs.pins, expected_output)
+
+    def testBothFalse(self):
+        gate = ANDGate("AND", "A1")
+        
+        expected_output = {'O': 0}
+        gate._logic()
+
+        self.assertEqual(gate.outputs.pins, expected_output)
+
+class TestORGate(TestCase):
+    def testBothTrue(self):
+        gate = ORGate("OR", "O1")
+        gate.set_input('A')
+        gate.set_input('B')
+
+        expected_output = {'O': 1}
+        gate._logic()
+
+        self.assertEqual(gate.outputs.pins, expected_output)
+
+    def testOneFalse(self):
+        gate = ORGate("OR", "O1")
+        gate.set_input('A')
+
+        expected_output = {'O': 1}
+        gate._logic()
+
+        self.assertEqual(gate.outputs.pins, expected_output)
+
+    def testBothFalse(self):
+        gate = ORGate("OR", "O1")
+        
+        expected_output = {'O': 0}
+        gate._logic()
+
+        self.assertEqual(gate.outputs.pins, expected_output)
+
+class TestXORGate(TestCase):
+    def testBothTrue(self):
+        gate = XORGate("XOR", "X1")
+        gate.set_input('A')
+        gate.set_input('B')
+
+        expected_output = {'O': 0}
+        gate._logic()
+
+        self.assertEqual(gate.outputs.pins, expected_output)
+
+    def testOneFalse(self):
+        gate = XORGate("XOR", "X1")
+        gate.set_input('A')
+
+        expected_output = {'O': 1}
+        gate._logic()
+
+        self.assertEqual(gate.outputs.pins, expected_output)
+
+    def testBothFalse(self):
+        gate = XORGate("XOR", "X1")
+        
+        expected_output = {'O': 0}
+        gate._logic()
+
+        self.assertEqual(gate.outputs.pins, expected_output)
+
+class TestNOTGate(TestCase):
+    def testTrue(self):
+        gate = NOTGate("NOR", "N1")
+        gate.set_input('A')
+
+        expected_output = {'O': 0}
+        gate._logic()
+
+        self.assertEqual(gate.outputs.pins, expected_output)
+
+    def testFales(self):
+        gate = NOTGate("NOR", "N1")
+
+        expected_output = {'O': 1}
+        gate._logic()
+
+        self.assertEqual(gate.outputs.pins, expected_output)
+
+class TestNANDGate(TestCase):
+    def testBothTrue(self):
+        gate = NANDGate("NAND", "NA1")
+        gate.set_input('A')
+        gate.set_input('B')
+
+        expected_output = {'O': 0}
+        gate._logic()
+
+        self.assertEqual(gate.outputs.pins, expected_output)
+
+    def testOneFalse(self):
+        gate = NANDGate("NAND", "NA1")
+        gate.set_input('A')
+
+        expected_output = {'O': 1}
+        gate._logic()
+
+        self.assertEqual(gate.outputs.pins, expected_output)
+
+    def testBothFalse(self):
+        gate = NANDGate("NAND", "NA1")
+        
+        expected_output = {'O': 1}
+        gate._logic()
+
+        self.assertEqual(gate.outputs.pins, expected_output)
+
+class TestNORGate(TestCase):
+    def testBothTrue(self):
+        gate = NORGate("NOR", "NO1")
+        gate.set_input('A')
+        gate.set_input('B')
+
+        expected_output = {'O': 0}
+        gate._logic()
+
+        self.assertEqual(gate.outputs.pins, expected_output)
+
+    def testOneFalse(self):
+        gate = NORGate("NOR", "NO1")
+        gate.set_input('A')
+
+        expected_output = {'O': 0}
+        gate._logic()
+
+        self.assertEqual(gate.outputs.pins, expected_output)
+
+    def testBothFalse(self):
+        gate = NORGate("NOR", "NO1")
+        
+        expected_output = {'O': 1}
+        gate._logic()
+
+        self.assertEqual(gate.outputs.pins, expected_output)
+
+class TestXNORGate(TestCase):
+    def testBothTrue(self):
+        gate = XNORGate("XNOR", "XN1")
+        gate.set_input('A')
+        gate.set_input('B')
+
+        expected_output = {'O': 1}
+        gate._logic()
+
+        self.assertEqual(gate.outputs.pins, expected_output)
+
+    def testOneFalse(self):
+        gate = XNORGate("XNOR", "XN1")
+        gate.set_input('A')
+
+        expected_output = {'O': 0}
+        gate._logic()
+
+        self.assertEqual(gate.outputs.pins, expected_output)
+
+    def testBothFalse(self):
+        gate = XNORGate("XNOR", "XN1")
+        
+        expected_output = {'O': 1}
+        gate._logic()
+
+        self.assertEqual(gate.outputs.pins, expected_output)
 
 class TestClock(TestCase):
     # This test sometimes fails due to a bug in the threaded clock and scanner code

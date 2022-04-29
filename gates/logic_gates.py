@@ -77,14 +77,18 @@ class PinCollection:
     def pins(self) -> dict:
         return self._pins
 
-    # Returns the name and status of a pin using the PinCollection[key] operation
+    # Returns the pin's value using the PinCollection[key] operation
     def __getitem__(self, name : str) -> collections.namedtuple:
-        return Pin(self._pins.get(name, ('', -1)))
+        if name in self._pins:
+            return self._pins.get(name)
+        else:
+            raise PinCollectionException(f"A pin with the name {name} does not exist")
+        
 
     # Setes the pin value using the PinCollection[key] = value operation
     def __setitem__(self, name : str, value : int) -> None:
         if abs(value) > 1:
-            raise PinCollectionException(f"A pin cannot be set to value {value}. Must be 0 or 1")
+            raise PinCollectionException(f"A pin ({name}) cannot be set to value {value}. Must be 0 or 1")
         if name in self._pins:
             self._pins[name] = value
         else:
@@ -102,6 +106,9 @@ class PinCollection:
         except KeyError:
             raise PinCollectionException(f"A pin with the name {name} cannot be removed as it does not exist")
         return self
+
+    def get_all_pins(self):
+        return [Pin(key, self._pins[key]) for key in self._pins]
     
     # Called when a PinCollection is printed
     def __repr__(self):
@@ -174,6 +181,108 @@ class LogicGate:
     # Called with a LogicGate is printed
     def __repr__(self):
         return f"Gate '{self.name}' ({self._type}): \n\tInputs: {self._inputs} \n\tOutputs: {self._outputs}"
+
+'''
+Class to implement the AND gate.
+
+Can support an arbitrary number of inputs into 1 output.
+'''
+class ANDGate(LogicGate):
+    def __init__(self, type: str, name: str, inputs: list = ['A', 'B'], outputs: list = ['O']) -> None:
+        super().__init__(type, name, inputs, outputs)
+
+    def _logic(self, *args, **kwargs) -> None:
+        outputs = [pin.name for pin in self._outputs.get_all_pins()]
+        if all([pin.status for pin in self._inputs.get_all_pins()]):
+            output_val = 1
+        else:
+            output_val = 0
+
+        for o in outputs:
+            self._outputs[o] = output_val
+
+'''
+Class to implement the OR gate.
+
+Can support an arbitrary number of inputs into 1 output.
+'''
+class ORGate(LogicGate):
+    def __init__(self, type: str, name: str, inputs: list = ['A', 'B'], outputs: list = ['O']) -> None:
+        super().__init__(type, name, inputs, outputs)
+
+    def _logic(self, *args, **kwargs) -> None:
+        outputs = [pin.name for pin in self._outputs.get_all_pins()]
+        if any([pin.status for pin in self._inputs.get_all_pins()]):
+            output_val = 1
+        else:
+            output_val = 0
+
+        for o in outputs:
+            self._outputs[o] = output_val
+
+'''
+Class to implement the XOR gate.
+
+Can support 2 inputs into 1 output.
+'''
+class XORGate(LogicGate):
+    def __init__(self, type: str, name: str, inputs: list = ['A', 'B'], outputs: list = ['O']) -> None:
+        super().__init__(type, name, inputs, outputs)
+
+    def _logic(self, *args, **kwargs) -> None:
+        self._outputs['O'] = self._inputs['A'] ^ self._inputs['B']
+
+'''
+Class to implement the NOT gate.
+
+Can support 1 input into 1 output.
+'''
+class NOTGate(LogicGate):
+    def __init__(self, type: str, name: str, inputs: list = ['A'], outputs: list = ['O']) -> None:
+        super().__init__(type, name, inputs, outputs)
+
+    def _logic(self, *args, **kwargs) -> None:
+        # This is a quick way to switch a bit from 0 -> 1 or 1 -> 0
+        self._outputs['O'] = abs(self._inputs['A'] - 1)
+
+'''
+Class to implement the NAND gate.
+
+Can support an arbitrary number of inputs into 1 output.
+'''
+class NANDGate(ANDGate, LogicGate):
+    def __init__(self, type: str, name: str, inputs: list = ['A', 'B'], outputs: list = ['O']) -> None:
+        super().__init__(type, name, inputs, outputs)
+
+    def _logic(self, *args, **kwargs) -> None:
+        super()._logic(args, kwargs)
+        self._outputs['O'] = abs(self._outputs['O'] - 1)
+
+'''
+Class to implement the NOR gate.
+
+Can support an arbitrary number of inputs into 1 output.
+'''
+class NORGate(ORGate, LogicGate):
+    def __init__(self, type: str, name: str, inputs: list = ['A', 'B'], outputs: list = ['O']) -> None:
+        super().__init__(type, name, inputs, outputs)
+
+    def _logic(self, *args, **kwargs) -> None:
+        super()._logic(args, kwargs)
+        self._outputs['O'] = abs(self._outputs['O'] - 1)
+
+'''
+Class to implement the XNOR gate.
+
+Can support 2 inputs into 1 output.
+'''
+class XNORGate(XORGate, LogicGate):
+    def __init__(self, type: str, name: str, inputs: list = ['A', 'B'], outputs: list = ['O']) -> None:
+        super().__init__(type, name, inputs, outputs)
+
+    def _logic(self, *args, **kwargs) -> None:
+        super()._logic(args, kwargs)
+        self._outputs['O'] = abs(self._outputs['O'] - 1)
 
 """
 Custom exception type for errors with PinCollections
@@ -276,3 +385,4 @@ class LogicGateManager:
 
             gate_string += "\n"
         return gate_string
+
