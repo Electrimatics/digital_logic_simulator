@@ -28,6 +28,20 @@ class logicsimTest(TestCase):
         }
         return render(request, 'logicsim/buttonTest.html', context=context)
 
+
+    def test_add_UserInput(self):
+        logicsim = LogicGate.objects.filter()
+        request = HttpRequest()
+        request.method = 'GET'
+        context = {
+           'logicsim':logicsim,
+        }
+        return render(request, 'logicsim/UserInput.html', context=context)
+
+    def test_add_data(self):
+        gate = LogicGate()
+        return LogicGate.objects.filter(gate_id = 1).exists()
+
     def test_update_element(self):
         and_gate = LogicGate(gate_type="and", image_url=".jpg")
         and_gate.save()
@@ -78,4 +92,5 @@ class logicsimTest(TestCase):
         self.assertNotEqual(gate4.gate_type, "or gate")
         self.assertEqual(gate4.gate_type, "")
         gate4.delete()
+
 
