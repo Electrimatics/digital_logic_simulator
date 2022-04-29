@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<form action="/action_page.php">
+  <label for="gate">Choose a gate:</label>
+
+
+  <select name="gate" id="gate">
+    <option value="GEN">GEN</option>
+    <option value="AND">AND</option>
+    <option value="OR">OR</option>
+    <option value="NOT">NOT</option>
+    <option value="XOR">XOR</option>
+    <option value="NAND">NAND</option>
+    <option value="NOR">NAND</option>
+    <option value="XNOR">NAND</option>
+  </select>
+
+  <br><br>
+  <label for="input1">Input 1: </label>
+  <input type="text" id="input1" name="input1"><br><br>
+  <label for="input2">Input 2: </label>
+  <input type="text" id="input2" name="input2"><br><br>
+
+
+  <input type="submit" value="Add Gate">
+  <input type="reset" value="Reset">
+</form>
+
+
+</body>
+</html>
