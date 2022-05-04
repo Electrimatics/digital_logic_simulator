@@ -29,11 +29,11 @@
         <ol>
             {% for gate in logicsim %}
             <li><img src="{{gate.image_url}}"/ height="100px"> <br/> {{ gate.gate_type }}  
-                <form action="{% url 'update' id=gate.id %}" method="get">
+                <form action="{% url 'update' gate_id=gate.gate_id %}" method="get">
                     {% csrf_token %}
                     <input type="submit" value="Update">
                 </form>
-                <form action="{% url 'delete' id=gate.id %}" method="post">
+                <form action="{% url 'delete' gate_id=gate.gate_id %}" method="post">
                     {% csrf_token %}
                     <input type="submit" value="Delete">
                 </form>

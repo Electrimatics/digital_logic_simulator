@@ -30,10 +30,15 @@ DEBUG = True
 Set your secrete key to something else, ideally!
 
 ## Running the webapp
-To run the webapp, navigate to the directory with [manage.py](./manage.py) in it and run:
+To setup the webapp, navigate to the directory with [manage.py](./manage.py) in it and run:
+```bash
+python3 manage.py migrate
+```
+Then, you can run the webapp using:
 ```bash
 python3 manage.py runserver
 ```
+
 
 ## Running Test Suites
 The Django test framework allows you to either run every unittest at the same time or individual ones.  To run all unit tests, navigate to the directory where [manage.py](./manage.py) and run:

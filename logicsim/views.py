@@ -36,9 +36,8 @@ def add(request):
     gate.save()
     return HttpResponseRedirect(reverse('index'))
 
-
-def update(request, id):
-    ob = LogicGate.objects.get(id=id)
+def update(request, gate_id):
+    ob = LogicGate.objects.get(gate_id=gate_id)
     if request.method == 'POST':
         ob.gate_type = request.POST['logic_gate']
         ob.image_url = request.POST['image_url']
@@ -48,12 +47,10 @@ def update(request, id):
         context = {
             'gate':ob
         }
-        return render(request, 'logicsim/update.html', context=context)
+        return render(request, 'logicsim/update.html', context=context)        
 
-        
-
-def delete(request, id):
-    ob = LogicGate.objects.get(id=id)
+def delete(request, gate_id):
+    ob = LogicGate.objects.get(gate_id=gate_id)
     ob.delete()
     return HttpResponseRedirect(reverse('index'))
     
