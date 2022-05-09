@@ -28,6 +28,14 @@ class logicsimTest(TestCase):
         }
         return render(request, 'logicsim/buttonTest.html', context=context)
 
+    def test_user_input(self):
+        logicsim = LogicGate.objects.filter()
+        request = HttpRequest()
+        request.method = 'GET'
+        context = {
+           'logicsim':logicsim,
+        }
+        return render(request, 'logicsim/UserInput.html', context=context)
 
     def test_add_UserInput(self):
         logicsim = LogicGate.objects.filter()
