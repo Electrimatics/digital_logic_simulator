@@ -43,14 +43,18 @@ class logicsimTest(TestCase):
         return LogicGate.objects.filter(gate_id = 1).exists()
 
     def test_update_element(self):
-        and_gate = LogicGate(gate_type="and", image_url=".jpg")
+        and_gate = LogicGate(gate_type="AND", input_a=1, input_b=2, image_url=".jpg")
         and_gate.save()
-        self.assertEqual(and_gate.gate_type, "and")
+        self.assertEqual(and_gate.gate_type, "AND")
        
         and_gate.gate_type = "or"
+        and_gate.input_a = 2
+        and_gate.input_b = 3
         and_gate.image_url = ".png"
         and_gate.save()
         self.assertEqual(and_gate.gate_type, "or")
+        self.assertEqual(and_gate.input_a, 2)
+        self.assertEqual(and_gate.input_b, 3)
         self.assertEqual(and_gate.image_url, ".png")
 
     def test_delete_element(self):
