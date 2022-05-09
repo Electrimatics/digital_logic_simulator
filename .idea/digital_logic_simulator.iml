@@ -1,15 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<module version="4">
-  <component name="NewModuleRootManager">
-    <orderEntry type="inheritedJdk" />
-    <orderEntry type="sourceFolder" forTests="false" />
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/digital_logic_simulator.iml" filepath="$PROJECT_DIR$/.idea/digital_logic_simulator.iml" />
+    </modules>
   </component>
-  <component name="TemplatesService">
-    <option name="TEMPLATE_CONFIGURATION" value="Jinja2" />
-    <option name="TEMPLATE_FOLDERS">
-      <list>
-        <option value="$MODULE_DIR$/logicsim/templates" />
-      </list>
-    </option>
-  </component>
-</module>
+</project>
