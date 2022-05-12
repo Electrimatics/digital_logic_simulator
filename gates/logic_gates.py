@@ -363,25 +363,34 @@ class LogicGateManager:
             raise TypeError(f"A clock must be of type Clock, not {type(clock)}")
         self._clock = clock
 
+    # Method to run the circuit simulator. 
     def _run_logic(self):
         complete = False
-        limiter = 10
+        limiter = 1000
         counter = 0
 
+        # Continue to run the circuit until all of the circuit inputs are satisfied
         while not complete and counter < limiter:
             complete = True
+
+            # Go through all of the gates in the circuit and run their logic if all input
+            # pins were satisfied
             for name, gate in self._gateKeeper.items():
                 if all(gate.inputs.get_all_setpins()):
                     gate._logic()
 
+                    # Gather the gate's output gate and pin connections and send the signal
+                    # to those gates (either 0 or 1, depending on the output pin)
                     for gate, connection in self._gateMapper[name].items():
                         for conn in connection:
                             self._gateKeeper[gate].set_input(conn.i_pin, self._gateKeeper[name].get_output(conn.o_pin))
+
+                # This gate's inputs have not been satisfied yet
                 else:
                     complete = False
-            counter += 1
 
-            
+            # "Runaway" limiter for circuits that will never satisfy all inputs
+            counter += 1
 
     # Method to scan for an active clock pulse. Should be put in a thread
     def _scan_for_pulse(self):

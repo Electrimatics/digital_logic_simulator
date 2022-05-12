@@ -1,6 +1,7 @@
 from statistics import NormalDist
 from django.test import TestCase
 from gates.logic_gates import *
+import pprint
 
 class TestGenericLogicGate(TestCase):
     def test_generic_gate_creation(self):
@@ -309,3 +310,132 @@ class TestCircuit(TestCase):
 
         self.assertEqual(and1.outputs.pins, {'O': 1})
         self.assertEqual(or1.outputs.pins, {'O': 1})
+
+class TestAdder(TestCase):
+
+    def create_full_adder(self):
+        # Setup the full adder
+        manager = LogicGateManager()
+        clock = Clock(frequency=1)
+        manager.clock = clock
+
+        xor1 = XORGate("XOR", "XOR1")
+        xor2 = XORGate("XOR", "XOR2")
+        and1 = ANDGate("AND", "AND1")
+        and2 = ANDGate("AND", "AND2")
+        or1 = ORGate("OR", "OR1")
+
+        manager.add_gate(xor1)
+        manager.add_gate(xor2)
+        manager.add_gate(and1)
+        manager.add_gate(and2)
+        manager.add_gate(or1)
+
+        manager.add_connection(GatePin(xor1.name, 'O'), GatePin(xor2.name, 'A'))
+        manager.add_connection(GatePin(xor1.name, 'O'), GatePin(and1.name, 'A'))
+        manager.add_connection(GatePin(and1.name, 'O'), GatePin(or1.name, 'A'))
+        manager.add_connection(GatePin(and2.name, 'O'), GatePin(or1.name, 'B'))
+
+        return (manager, xor1, xor2, and1, and2, or1)
+
+    def test_adder_zero(self):
+        manager, xor1, xor2, and1, and2, or1 = self.create_full_adder()
+        A = GND("VCC", "GND1")
+        B = GND("GND", "GND2")
+        C = GND("GND", "GND3")
+
+        manager.add_gate(A)
+        manager.add_gate(B)
+        manager.add_gate(C)
+
+        manager.add_connection(GatePin(A.name, 'O'), GatePin(xor1.name, 'A'))
+        manager.add_connection(GatePin(A.name, 'O'), GatePin(and2.name, 'A'))
+        manager.add_connection(GatePin(B.name, 'O'), GatePin(xor1.name, 'B'))
+        manager.add_connection(GatePin(B.name, 'O'), GatePin(and2.name, 'B'))
+        manager.add_connection(GatePin(C.name, 'O'), GatePin(xor2.name, 'B'))
+        manager.add_connection(GatePin(C.name, 'O'), GatePin(and1.name, 'B'))
+
+        manager.start_clock(max_cycles=2)
+
+        self.assertEqual(xor1.outputs.pins, {'O': 0})
+        self.assertEqual(xor2.outputs.pins, {'O': 0})
+        self.assertEqual(and1.outputs.pins, {'O': 0})
+        self.assertEqual(and2.outputs.pins, {'O': 0})
+        self.assertEqual(or1.outputs.pins, {'O': 0})
+
+    def test_adder_one(self):
+        manager, xor1, xor2, and1, and2, or1 = self.create_full_adder()
+        A = VCC("VCC", "VCC1")
+        B = GND("GND", "GND1")
+        C = GND("GND", "GND2")
+
+        manager.add_gate(A)
+        manager.add_gate(B)
+        manager.add_gate(C)
+
+        manager.add_connection(GatePin(A.name, 'O'), GatePin(xor1.name, 'A'))
+        manager.add_connection(GatePin(A.name, 'O'), GatePin(and2.name, 'A'))
+        manager.add_connection(GatePin(B.name, 'O'), GatePin(xor1.name, 'B'))
+        manager.add_connection(GatePin(B.name, 'O'), GatePin(and2.name, 'B'))
+        manager.add_connection(GatePin(C.name, 'O'), GatePin(xor2.name, 'B'))
+        manager.add_connection(GatePin(C.name, 'O'), GatePin(and1.name, 'B'))
+
+        manager.start_clock(max_cycles=2)
+
+        self.assertEqual(xor1.outputs.pins, {'O': 1})
+        self.assertEqual(xor2.outputs.pins, {'O': 1})
+        self.assertEqual(and1.outputs.pins, {'O': 0})
+        self.assertEqual(and2.outputs.pins, {'O': 0})
+        self.assertEqual(or1.outputs.pins, {'O': 0})
+
+    def test_adder_two(self):
+        manager, xor1, xor2, and1, and2, or1 = self.create_full_adder()
+        A = VCC("VCC", "VCC1")
+        B = VCC("VCC", "VCC2")
+        C = GND("GND", "GND2")
+
+        manager.add_gate(A)
+        manager.add_gate(B)
+        manager.add_gate(C)
+
+        manager.add_connection(GatePin(A.name, 'O'), GatePin(xor1.name, 'A'))
+        manager.add_connection(GatePin(A.name, 'O'), GatePin(and2.name, 'A'))
+        manager.add_connection(GatePin(B.name, 'O'), GatePin(xor1.name, 'B'))
+        manager.add_connection(GatePin(B.name, 'O'), GatePin(and2.name, 'B'))
+        manager.add_connection(GatePin(C.name, 'O'), GatePin(xor2.name, 'B'))
+        manager.add_connection(GatePin(C.name, 'O'), GatePin(and1.name, 'B'))
+
+        manager.start_clock(max_cycles=2)
+
+        self.assertEqual(xor1.outputs.pins, {'O': 0})
+        self.assertEqual(xor2.outputs.pins, {'O': 0})
+        self.assertEqual(and1.outputs.pins, {'O': 0})
+        self.assertEqual(and2.outputs.pins, {'O': 1})
+        self.assertEqual(or1.outputs.pins, {'O': 1})
+
+    def test_adder_three(self):
+        manager, xor1, xor2, and1, and2, or1 = self.create_full_adder()
+        A = VCC("VCC", "VCC1")
+        B = VCC("VCC", "VCC2")
+        C = VCC("VCC", "VCC3")
+
+        manager.add_gate(A)
+        manager.add_gate(B)
+        manager.add_gate(C)
+
+        manager.add_connection(GatePin(A.name, 'O'), GatePin(xor1.name, 'A'))
+        manager.add_connection(GatePin(A.name, 'O'), GatePin(and2.name, 'A'))
+        manager.add_connection(GatePin(B.name, 'O'), GatePin(xor1.name, 'B'))
+        manager.add_connection(GatePin(B.name, 'O'), GatePin(and2.name, 'B'))
+        manager.add_connection(GatePin(C.name, 'O'), GatePin(xor2.name, 'B'))
+        manager.add_connection(GatePin(C.name, 'O'), GatePin(and1.name, 'B'))
+
+        manager.start_clock(max_cycles=2)
+
+        self.assertEqual(xor1.outputs.pins, {'O': 0})
+        self.assertEqual(xor2.outputs.pins, {'O': 1})
+        self.assertEqual(and1.outputs.pins, {'O': 0})
+        self.assertEqual(and2.outputs.pins, {'O': 0})
+        self.assertEqual(or1.outputs.pins, {'O': 1})
+
+        
