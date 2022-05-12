@@ -1,3 +1,4 @@
+from cgi import test
 import collections
 import threading
 import time
@@ -72,10 +73,15 @@ PinCollection.
 class PinCollection:
     def __init__(self, pins : list = []) -> None:
         self._pins = dict(zip(pins, [0]*len(pins)))
+        self._setpins = dict(zip(pins, [0]*len(pins)))
 
     @property
     def pins(self) -> dict:
         return self._pins
+
+    @property
+    def setpins(self) -> dict:
+        return self._setpins
 
     # Returns the pin's value using the PinCollection[key] operation
     def __getitem__(self, name : str) -> collections.namedtuple:
@@ -91,24 +97,34 @@ class PinCollection:
             raise PinCollectionException(f"A pin ({name}) cannot be set to value {value}. Must be 0 or 1")
         if name in self._pins:
             self._pins[name] = value
+            self._setpins[name] = 1
         else:
             raise PinCollectionException(f"A pin with the name {name} cannot be set as it does not exist")
 
     # Adds a pin to the collection with the += operator
     def __iadd__(self, name : str):
         self._pins[name] = 0
+        self._setpins[name] = 0
         return self
 
     # Removes a pin from the collection using the -= operator
     def __isub__(self, name : str):
         try:
             self._pins.pop(name)
+            self._setpins.pop(name)
         except KeyError:
             raise PinCollectionException(f"A pin with the name {name} cannot be removed as it does not exist")
         return self
 
     def get_all_pins(self):
         return [Pin(key, self._pins[key]) for key in self._pins]
+
+    def get_all_setpins(self):
+        return [self._setpins[key] for key in self._setpins]
+
+    def clear_all_setpins(self):
+        for key in self._setpins.keys():
+            self._setpins[key] = 0
     
     # Called when a PinCollection is printed
     def __repr__(self):
@@ -166,17 +182,17 @@ class LogicGate:
             self._inputs += i
 
     # Sets a pin in the input
-    def set_input(self, name : str):
-        self._inputs[name] = 1
+    def set_input(self, name : str, val : int = 1):
+        self._inputs[name] = val
 
     # Adds a set of pins to the output
     def add_outputs(self, outputs : list):
         for o in outputs:
             self._outputs += o
 
-    # Sets a pin in the output
-    def set_output(self, name : str):
-        self._outputs[name] = 0;
+    # Gets a pin's output
+    def get_output(self, name : str) -> int:
+        return self._outputs[name]
 
     # Called with a LogicGate is printed
     def __repr__(self):
@@ -285,6 +301,32 @@ class XNORGate(XORGate, LogicGate):
         self._outputs['O'] = abs(self._outputs['O'] - 1)
 
 """
+VCC source.  Always outputs a high signal
+"""
+class VCC(LogicGate):
+    def __init__(self, type: str, name: str, inputs: list = [], outputs: list = ['O']) -> None:
+        if len(inputs) > 0:
+            raise LogicGateManagerException(f"VCC gate does not take any inputs")
+
+        super().__init__(type, name, inputs, outputs)
+
+    def _logic(self, *args, **kwargs) -> None:
+        self._outputs['O'] = 1
+
+"""
+GND source.  Always outputs a low signal
+"""
+class GND(LogicGate):
+    def __init__(self, type: str, name: str, inputs: list = [], outputs: list = ['O']) -> None:
+        if len(inputs) > 0:
+            raise LogicGateManagerException(f"GND gate does not take any inputs")
+
+        super().__init__(type, name, inputs, outputs)
+
+    def _logic(self, *args, **kwargs) -> None:
+        self._outputs['O'] = 0
+
+"""
 Custom exception type for errors with PinCollections
 """
 class LogicGateManagerException(Exception):
@@ -321,6 +363,40 @@ class LogicGateManager:
             raise TypeError(f"A clock must be of type Clock, not {type(clock)}")
         self._clock = clock
 
+    # Method to run the circuit simulator. 
+    def _run_logic(self):
+        complete = False
+        limiter = 1000
+        counter = 0
+
+        # Continue to run the circuit until all of the circuit inputs are satisfied
+        while not complete and counter < limiter:
+            complete = True
+
+            # Go through all of the gates in the circuit and run their logic if all input
+            # pins were satisfied
+            for name, gate in self._gateKeeper.items():
+                if all(gate.inputs.get_all_setpins()):
+                    gate._logic()
+
+                    # Gather the gate's output gate and pin connections and send the signal
+                    # to those gates (either 0 or 1, depending on the output pin)
+                    for gate, connection in self._gateMapper[name].items():
+                        for conn in connection:
+                            self._gateKeeper[gate].set_input(conn.i_pin, self._gateKeeper[name].get_output(conn.o_pin))
+
+                # This gate's inputs have not been satisfied yet
+                else:
+                    complete = False
+
+            # "Runaway" limiter for circuits that will never satisfy all inputs
+            counter += 1
+
+        # Clear all of the input and output satisfied flags
+        for name, gate in self._gateKeeper.items():
+            gate.inputs.clear_all_setpins()
+            gate.outputs.clear_all_setpins()
+
     # Method to scan for an active clock pulse. Should be put in a thread
     def _scan_for_pulse(self):
         global clock_cycles, pulse_count
@@ -331,6 +407,7 @@ class LogicGateManager:
                 with tlock:
                     pulse_count += 1
                     self._clock.send_pulse = 0
+                self._run_logic()
 
     # Start the clock and the associated scanner to scan for clock pulses. These pulses will be sent into
     # the circuit
@@ -351,7 +428,7 @@ class LogicGateManager:
         return pulse_count
 
     # Returns a LogicGate with the specified name using the LogicGateManager[key] operation
-    def __getitem__(self, name : str) -> LogicGate:
+    def __getitem__(self, name : str):
         return self._gateKeeper.get(name)
 
     # Adds a gate to the manager
@@ -385,4 +462,3 @@ class LogicGateManager:
 
             gate_string += "\n"
         return gate_string
-
