@@ -237,6 +237,41 @@ class TestXNORGate(TestCase):
 
         self.assertEqual(gate.outputs.pins, expected_output)
 
+class TestVCC(TestCase):
+    def testHigh(self):
+        gate = VCC("VCC", "VCC1")
+
+        expected_output = {'O': 1}
+        gate._logic()
+
+        self.assertEqual(gate.outputs.pins, expected_output)
+
+    def testLow(self):
+        gate = VCC("VCC", "VCC1")
+
+        expected_output = {'O': 1}
+        gate._logic()
+
+        self.assertNotEqual(gate.outputs.pins, expected_output)
+
+class TestGND(TestCase):
+    def testHigh(self):
+        gate = VCC("VCC", "VCC1")
+
+        expected_output = {'O': 1}
+        gate._logic()
+
+        self.assertNotEqual(gate.outputs.pins, expected_output)
+
+    def testLow(self):
+        gate = VCC("VCC", "VCC1")
+
+        expected_output = {'O': 1}
+        gate._logic()
+
+        self.assertNotEqual(gate.outputs.pins, expected_output)
+
+
 class TestClock(TestCase):
     # This test sometimes fails due to a bug in the threaded clock and scanner code
     def test_clock_pulse(self):

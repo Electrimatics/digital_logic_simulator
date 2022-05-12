@@ -72,10 +72,15 @@ PinCollection.
 class PinCollection:
     def __init__(self, pins : list = []) -> None:
         self._pins = dict(zip(pins, [0]*len(pins)))
+        self._setpins = dict(zip(pins, [0]*len(pins)))
 
     @property
     def pins(self) -> dict:
         return self._pins
+
+    @property
+    def setpins(self) -> dict:
+        return self._setpins
 
     # Returns the pin's value using the PinCollection[key] operation
     def __getitem__(self, name : str) -> collections.namedtuple:
@@ -91,24 +96,34 @@ class PinCollection:
             raise PinCollectionException(f"A pin ({name}) cannot be set to value {value}. Must be 0 or 1")
         if name in self._pins:
             self._pins[name] = value
+            self._setpins[name] = 1
         else:
             raise PinCollectionException(f"A pin with the name {name} cannot be set as it does not exist")
 
     # Adds a pin to the collection with the += operator
     def __iadd__(self, name : str):
         self._pins[name] = 0
+        self._setpins[name] = 0
         return self
 
     # Removes a pin from the collection using the -= operator
     def __isub__(self, name : str):
         try:
             self._pins.pop(name)
+            self._setpins.pop(name)
         except KeyError:
             raise PinCollectionException(f"A pin with the name {name} cannot be removed as it does not exist")
         return self
 
     def get_all_pins(self):
         return [Pin(key, self._pins[key]) for key in self._pins]
+
+    def get_all_setpins(self):
+        return [self._pins[key] for key in self._setpins]
+
+    def clear_all_setpins(self):
+        for key in self._setpins.keys:
+            self._setpins[key] = 0
     
     # Called when a PinCollection is printed
     def __repr__(self):
@@ -285,6 +300,32 @@ class XNORGate(XORGate, LogicGate):
         self._outputs['O'] = abs(self._outputs['O'] - 1)
 
 """
+VCC source.  Always outputs a high signal
+"""
+class VCC(LogicGate):
+    def __init__(self, type: str, name: str, inputs: list = [], outputs: list = ['O']) -> None:
+        if len(inputs) > 0:
+            raise LogicGateManagerException(f"VCC gate does not take any inputs")
+
+        super().__init__(type, name, inputs, outputs)
+
+    def _logic(self, *args, **kwargs) -> None:
+        self._outputs['O'] = 1
+
+"""
+GND source.  Always outputs a low signal
+"""
+class GND(LogicGate):
+    def __init__(self, type: str, name: str, inputs: list = [], outputs: list = ['O']) -> None:
+        if len(inputs) > 0:
+            raise LogicGateManagerException(f"GND gate does not take any inputs")
+
+        super().__init__(type, name, inputs, outputs)
+
+    def _logic(self, *args, **kwargs) -> None:
+        self._outputs['O'] = 0
+
+"""
 Custom exception type for errors with PinCollections
 """
 class LogicGateManagerException(Exception):
@@ -321,6 +362,10 @@ class LogicGateManager:
             raise TypeError(f"A clock must be of type Clock, not {type(clock)}")
         self._clock = clock
 
+    def _run_logic(self):
+        pass
+            
+
     # Method to scan for an active clock pulse. Should be put in a thread
     def _scan_for_pulse(self):
         global clock_cycles, pulse_count
@@ -351,7 +396,7 @@ class LogicGateManager:
         return pulse_count
 
     # Returns a LogicGate with the specified name using the LogicGateManager[key] operation
-    def __getitem__(self, name : str) -> LogicGate:
+    def __getitem__(self, name : str):
         return self._gateKeeper.get(name)
 
     # Adds a gate to the manager
