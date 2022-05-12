@@ -435,7 +435,7 @@ class TestAdder(TestCase):
         self.assertEqual(xor1.outputs.pins, {'O': 0})
         self.assertEqual(xor2.outputs.pins, {'O': 1})
         self.assertEqual(and1.outputs.pins, {'O': 0})
-        self.assertEqual(and2.outputs.pins, {'O': 0})
+        self.assertEqual(and2.outputs.pins, {'O': 1})
         self.assertEqual(or1.outputs.pins, {'O': 1})
 
         

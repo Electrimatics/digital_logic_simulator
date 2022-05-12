@@ -123,7 +123,7 @@ class PinCollection:
         return [self._setpins[key] for key in self._setpins]
 
     def clear_all_setpins(self):
-        for key in self._setpins.keys:
+        for key in self._setpins.keys():
             self._setpins[key] = 0
     
     # Called when a PinCollection is printed
@@ -391,6 +391,11 @@ class LogicGateManager:
 
             # "Runaway" limiter for circuits that will never satisfy all inputs
             counter += 1
+
+        # Clear all of the input and output satisfied flags
+        for name, gate in self._gateKeeper.items():
+            gate.inputs.clear_all_setpins()
+            gate.outputs.clear_all_setpins()
 
     # Method to scan for an active clock pulse. Should be put in a thread
     def _scan_for_pulse(self):
