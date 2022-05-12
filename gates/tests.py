@@ -281,3 +281,31 @@ class TestClock(TestCase):
         pulse_count = manager.start_clock(max_cycles=10)
 
         self.assertEqual(pulse_count, 10)
+
+class TestCircuit(TestCase):
+    def test_simple_circuit(self):
+        manager = LogicGateManager()
+        clock = Clock(frequency=1)
+        manager.clock = clock
+
+        vcc1 = VCC("VCC", "VCC1")
+        vcc2 = VCC("VCC", "VCC2")
+        gnd1 = GND("GND", "GND1")
+        and1 = ANDGate("AND", "AND1")
+        or1 = ORGate("OR", "OR1")
+
+        manager.add_gate(vcc1)
+        manager.add_gate(vcc2)
+        manager.add_gate(gnd1)
+        manager.add_gate(and1)
+        manager.add_gate(or1)
+
+        manager.add_connection(GatePin(vcc1.name, 'O'), GatePin(and1.name, 'A'))
+        manager.add_connection(GatePin(vcc2.name, 'O'), GatePin(and1.name, 'B'))
+        manager.add_connection(GatePin(and1.name, 'O'), GatePin(or1.name, 'A'))
+        manager.add_connection(GatePin(gnd1.name, 'O'), GatePin(or1.name, 'B'))
+
+        manager.start_clock(max_cycles=2)
+
+        self.assertEqual(and1.outputs.pins, {'O': 1})
+        self.assertEqual(or1.outputs.pins, {'O': 1})

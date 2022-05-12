@@ -1,3 +1,4 @@
+from cgi import test
 import collections
 import threading
 import time
@@ -119,7 +120,7 @@ class PinCollection:
         return [Pin(key, self._pins[key]) for key in self._pins]
 
     def get_all_setpins(self):
-        return [self._pins[key] for key in self._setpins]
+        return [self._setpins[key] for key in self._setpins]
 
     def clear_all_setpins(self):
         for key in self._setpins.keys:
@@ -181,17 +182,17 @@ class LogicGate:
             self._inputs += i
 
     # Sets a pin in the input
-    def set_input(self, name : str):
-        self._inputs[name] = 1
+    def set_input(self, name : str, val : int = 1):
+        self._inputs[name] = val
 
     # Adds a set of pins to the output
     def add_outputs(self, outputs : list):
         for o in outputs:
             self._outputs += o
 
-    # Sets a pin in the output
-    def set_output(self, name : str):
-        self._outputs[name] = 0;
+    # Gets a pin's output
+    def get_output(self, name : str) -> int:
+        return self._outputs[name]
 
     # Called with a LogicGate is printed
     def __repr__(self):
@@ -363,7 +364,23 @@ class LogicGateManager:
         self._clock = clock
 
     def _run_logic(self):
-        pass
+        complete = False
+        limiter = 10
+        counter = 0
+
+        while not complete and counter < limiter:
+            complete = True
+            for name, gate in self._gateKeeper.items():
+                if all(gate.inputs.get_all_setpins()):
+                    gate._logic()
+
+                    for gate, connection in self._gateMapper[name].items():
+                        for conn in connection:
+                            self._gateKeeper[gate].set_input(conn.i_pin, self._gateKeeper[name].get_output(conn.o_pin))
+                else:
+                    complete = False
+            counter += 1
+
             
 
     # Method to scan for an active clock pulse. Should be put in a thread
@@ -376,6 +393,7 @@ class LogicGateManager:
                 with tlock:
                     pulse_count += 1
                     self._clock.send_pulse = 0
+                self._run_logic()
 
     # Start the clock and the associated scanner to scan for clock pulses. These pulses will be sent into
     # the circuit
@@ -431,3 +449,28 @@ class LogicGateManager:
             gate_string += "\n"
         return gate_string
 
+# def test_simple_circuit():
+#     manager = LogicGateManager()
+#     clock = Clock(frequency=1)
+#     manager.clock = clock
+
+#     vcc1 = VCC("VCC", "VCC1")
+#     vcc2 = VCC("VCC", "VCC2")
+#     gnd1 = GND("GND", "GND1")
+#     and1 = ANDGate("AND", "AND1")
+#     or1 = ORGate("OR", "OR1")
+
+#     manager.add_gate(vcc1)
+#     manager.add_gate(vcc2)
+#     manager.add_gate(gnd1)
+#     manager.add_gate(and1)
+#     manager.add_gate(or1)
+
+#     manager.add_connection(GatePin(vcc1.name, 'O'), GatePin(and1.name, 'A'))
+#     manager.add_connection(GatePin(vcc2.name, 'O'), GatePin(and1.name, 'B'))
+#     manager.add_connection(GatePin(and1.name, 'O'), GatePin(or1.name, 'A'))
+#     manager.add_connection(GatePin(gnd1.name, 'O'), GatePin(or1.name, 'B'))
+
+#     manager.start_clock(max_cycles=2)
+
+# test_simple_circuit()
