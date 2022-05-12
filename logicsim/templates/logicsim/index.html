@@ -25,7 +25,7 @@
 
 <div class="container">
     <p>
-        Logic Gate Simulator <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4c/Or-gate-en.svg/500px-Or-gate-en.svg.png?20060601172209"/>
+        <h1>Logic Gate Simulator</h1>
         <ol>
             {% for gate in db %}
             <li><img src="{{gate.image_url}}"/ height="100px"> <br/> {{ gate.gate_type }}  
@@ -44,11 +44,29 @@
     </p>
     <form action="{% url 'add' %}" method="post">
         {% csrf_token %}
-        Enter a new logic gate: <br/>
-        <input type="text" name="logic_gate"><br/>
+        <label for="gate">Choose a gate:</label>
+
+        <select name="gate" id="gate">
+            <option value="AND">AND</option>
+            <option value="OR">OR</option>
+            <option value="NOT">NOT</option>
+            <option value="XOR">XOR</option>
+            <option value="NAND">NAND</option>
+            <option value="NOR">NAND</option>
+            <option value="XNOR">NAND</option>
+        </select>
+
+        <br><br>
+        <label for="input1">Input 1: </label>
+        <input type="number" id="input1" name="input1" min="0" value="0"><br><br>
+        <label for="input2">Input 2: </label>
+        <input type="number" id="input2" name="input2" min="0" value="0"><br><br>
+        
         If you'd like to add a picture, put the url here:<br/>
         <input type="text" name="image_url">
-        <input type="submit">
+
+        <input type="submit" value="Add Gate">
+        <input type="reset" value="Reset">
     </form>
 </div>
 
