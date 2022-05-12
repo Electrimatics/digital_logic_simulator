@@ -27,7 +27,7 @@
     <p>
         Logic Gate Simulator <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4c/Or-gate-en.svg/500px-Or-gate-en.svg.png?20060601172209"/>
         <ol>
-            {% for gate in logicsim %}
+            {% for gate in db %}
             <li><img src="{{gate.image_url}}"/ height="100px"> <br/> {{ gate.gate_type }}  
                 <form action="{% url 'update' gate_id=gate.gate_id %}" method="get">
                     {% csrf_token %}
@@ -51,6 +51,82 @@
         <input type="submit">
     </form>
 </div>
+
+
+<form action="" method="GATE">
+  <label for="gate">Choose a gate:</label>
+
+
+  <select name="gate" id="gate">
+    <option value="AND">AND</option>
+    <option value="OR">OR</option>
+    <option value="NOT">NOT</option>
+    <option value="XOR">XOR</option>
+    <option value="NAND">NAND</option>
+    <option value="NOR">NAND</option>
+    <option value="XNOR">NAND</option>
+  </select>
+
+  <br><br>
+  <label for="input1">Input 1: </label>
+  <input type="number" id="input1" name="input1"><br><br>
+  <label for="input2">Input 2: </label>
+  <input type="number" id="input2" name="input2"><br><br>
+
+  <label for="SS1">Start State 1: </label>
+  <input type="number" id="SS1" name="SS1" min = 0 max = 1><br><br>
+  <label for="SS2">Start State 2: </label>
+  <input type="number" id="SS2" name="SS2" min = 0 max = 1><br><br>
+
+  <input type="submit" value="Add Gate">
+  <input type="reset" value="Reset">
+
+</form>
+
+    <h1>Current Gates</h1>
+    <a href=""><button>Refresh</button></a>
+    <br>
+
+    <table>
+        <thead>
+            <tr>
+                <th>
+                    Gate ID
+                </th>
+                <th>
+                    Gate Type
+                </th>
+                <th>
+                    Input 1
+                </th>
+                <th>
+                    Input 2
+                </th>
+                <th>
+                    Output
+                </th>
+            </tr>
+        </thead>
+        {% for gate in db %}
+            <tr>
+                <td>
+                    {{gate.fields.gate_id}}
+                </td>
+                <td>
+                    {{gate.fields.gate_type}}
+                </td>
+                <td>
+                    {{gate.fields.input_a}}
+                </td>
+                <td>
+                    {{gate.fields.input_b}}
+                </td>
+                <td>
+                    {{gate.fields.output}}
+                </td>
+            </tr>
+        {% endfor %}
+    </table>
 
 <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>

@@ -18,9 +18,9 @@ def createGate(request):
             gate.input_a = request.GATE.get('input1')
             gate.input_b = request.GATE.get('input2')
             gate.save()
-            return render(request, 'logicsim/UserInput.html', context=context)
+            return render(request, 'logicsim/index.html', context=context)
     else:
-        return render(request, 'logicsim/UserInput.html')
+        return render(request, 'logicsim/index.html')
 
 def index(request):
     logicsim = LogicGate.objects.filter()
