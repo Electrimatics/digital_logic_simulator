@@ -312,7 +312,6 @@ class TestCircuit(TestCase):
         self.assertEqual(or1.outputs.pins, {'O': 1})
 
 class TestAdder(TestCase):
-
     def create_full_adder(self):
         # Setup the full adder
         manager = LogicGateManager()
