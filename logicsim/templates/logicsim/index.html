@@ -27,7 +27,7 @@
     <p>
         <h1>Logic Gate Simulator</h1>
         <ol>
-            {% for gate in db %}
+            {% for gate in logicsim %}
             <li><img src="{{gate.image_url}}"/ height="100px"> <br/> {{ gate.gate_type }}  
                 <form action="{% url 'update' gate_id=gate.gate_id %}" method="get">
                     {% csrf_token %}
