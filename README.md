@@ -32,6 +32,10 @@ Set your secrete key to something else, ideally!
 ## Running the webapp
 To setup the webapp, navigate to the directory with [manage.py](./manage.py) in it and run:
 ```bash
+python3 manage.py flush
+```
+to clear the old database. Then, update the database using:
+```bash
 python3 manage.py migrate
 ```
 Then, you can run the webapp using:
