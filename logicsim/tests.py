@@ -102,7 +102,14 @@ class logicsimTest(TestCase):
         gate4 = LogicGate()
         gate4.save()
         self.assertNotEqual(gate4.gate_type, "or gate")
-        self.assertEqual(gate4.gate_type, "")
+        self.assertEqual(gate4.gate_type, "AND")
         gate4.delete()
 
+    #Should print out a pretty truth table.
+    def test_output_function(self):
+        gate5 = LogicGate()
+        gate5.save()
+        print("\n")
+        gate5.outputTable()
+        gate5.delete()
 
