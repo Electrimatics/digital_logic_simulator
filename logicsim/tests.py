@@ -28,6 +28,14 @@ class logicsimTest(TestCase):
         }
         return render(request, 'logicsim/buttonTest.html', context=context)
 
+    def test_user_input(self):
+        logicsim = LogicGate.objects.filter()
+        request = HttpRequest()
+        request.method = 'GET'
+        context = {
+           'logicsim':logicsim,
+        }
+        return render(request, 'logicsim/UserInput.html', context=context)
 
     def test_add_UserInput(self):
         logicsim = LogicGate.objects.filter()
@@ -43,14 +51,18 @@ class logicsimTest(TestCase):
         return LogicGate.objects.filter(gate_id = 1).exists()
 
     def test_update_element(self):
-        and_gate = LogicGate(gate_type="and", image_url=".jpg")
+        and_gate = LogicGate(gate_type="AND", input_a=1, input_b=2, image_url=".jpg")
         and_gate.save()
-        self.assertEqual(and_gate.gate_type, "and")
+        self.assertEqual(and_gate.gate_type, "AND")
        
         and_gate.gate_type = "or"
+        and_gate.input_a = 2
+        and_gate.input_b = 3
         and_gate.image_url = ".png"
         and_gate.save()
         self.assertEqual(and_gate.gate_type, "or")
+        self.assertEqual(and_gate.input_a, 2)
+        self.assertEqual(and_gate.input_b, 3)
         self.assertEqual(and_gate.image_url, ".png")
 
     def test_delete_element(self):
@@ -90,7 +102,14 @@ class logicsimTest(TestCase):
         gate4 = LogicGate()
         gate4.save()
         self.assertNotEqual(gate4.gate_type, "or gate")
-        self.assertEqual(gate4.gate_type, "")
+        self.assertEqual(gate4.gate_type, "AND")
         gate4.delete()
 
+    #Should print out a pretty truth table.
+    def test_output_function(self):
+        gate5 = LogicGate()
+        gate5.save()
+        print("\n")
+        gate5.outputTable()
+        gate5.delete()
 
