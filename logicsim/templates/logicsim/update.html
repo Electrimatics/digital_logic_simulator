@@ -27,7 +27,7 @@
     <p>
         Update Gate: {{gate.gate_type}} <img src="{{gate.image_url}}"
     </p>
-    <form action="{% url 'update' gate_id=gate.gate_id %}" method="post">
+    <form action="{% url 'update' id=gate.id %}" method="post">
         {% csrf_token %}
         <label for="gate">Choose a gate:</label>
 

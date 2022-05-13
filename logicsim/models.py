@@ -4,9 +4,6 @@ from django.db import models
 
 #This would probably be changed later to suit our needs.
 class LogicGate(models.Model):
-
-    gate_id = models.AutoField(primary_key=True, default=0)
-
     AND = 'and'
     NAND = 'nand'
     OR = 'or'
