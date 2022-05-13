@@ -24,9 +24,22 @@ class LogicGate(models.Model):
         (NOT, "NOT")
     )
     gate_type = models.CharField(max_length=9, choices=gate_choices, default="AND")
-
     input_a = models.IntegerField(default=0)
     input_b = models.IntegerField(default=0)
     output = models.IntegerField(default=0)
     image_url = models.TextField() #prob able to do based on gate_type
+
+    #Truth table generator for printing pretty truth tables.
+    def outputTable(self):
+        input_a = self.input_a
+        input_b = self.input_b
+        output = self.output
+        print("  | A | B | X |")
+        print("  -------------")
+        for i in range(2):
+            for j in range(2):
+                print("  | "+str(input_a)+" | "+str(input_b)+" | "+str(output)+" |")
+
+    
+
 
