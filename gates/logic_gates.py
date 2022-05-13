@@ -412,11 +412,13 @@ class LogicGateManager:
     # Start the clock and the associated scanner to scan for clock pulses. These pulses will be sent into
     # the circuit
     def start_clock(self, max_cycles = -1):
+        global clock_cycles, pulse_count
+
         if not self._clock:
             raise LogicGateManagerException(f"No clock is attached to this LogicGateManager")
 
-        global clock_cycles, pulse_count
         clock_cycles = max_cycles
+        pulse_count = 0
 
         scanner = threading.Thread(target=self._scan_for_pulse, args=())
         scanner.start()

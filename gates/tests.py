@@ -14,7 +14,8 @@ class TestGenericLogicGate(TestCase):
         expected_input = dict(zip(inputs, [0]*len(inputs)))
         expected_output = dict(zip(outputs, [0]*len(outputs)))
 
-        gate_manager.add_gate(type, name, inputs, outputs)
+        gate = LogicGate(type, name, inputs, outputs)
+        gate_manager.add_gate(gate)
         self.assertEqual(gate_manager[name].type, type)
         self.assertEqual(gate_manager[name].inputs.pins, expected_input)
         self.assertEqual(gate_manager[name].outputs.pins, expected_output)
@@ -30,7 +31,8 @@ class TestGenericLogicGate(TestCase):
         expected_input['A'] = 1
         expected_output = dict(zip(outputs, [0]*len(outputs)))
 
-        gate_manager.add_gate(type, name, inputs, outputs)
+        gate = LogicGate(type, name, inputs, outputs)
+        gate_manager.add_gate(gate)
         gate_manager[name].set_input("A");
         self.assertEqual(gate_manager[name].type, type)
         self.assertEqual(gate_manager[name].inputs.pins, expected_input)
@@ -46,8 +48,10 @@ class TestGenericLogicGate(TestCase):
 
         expected_connections = {'G1': {'G2': [PinConnection(o_pin='O', i_pin='A')]}, 'G2': {}}
 
-        gate_manager.add_gate(type, name1, inputs, outputs)
-        gate_manager.add_gate(type, name2, inputs, outputs)
+        gate1 = LogicGate(type, name1, inputs, outputs)
+        gate_manager.add_gate(gate1)
+        gate2 = LogicGate(type, name2, inputs, outputs)
+        gate_manager.add_gate(gate2)
         gate_manager.add_connection(GatePin(name1, 'O'), GatePin(name2, 'A'))
 
         self.assertEqual(gate_manager.connections, expected_connections)
@@ -250,14 +254,14 @@ class TestVCC(TestCase):
     def testLow(self):
         gate = VCC("VCC", "VCC1")
 
-        expected_output = {'O': 1}
+        expected_output = {'O': 0}
         gate._logic()
 
         self.assertNotEqual(gate.outputs.pins, expected_output)
 
 class TestGND(TestCase):
     def testHigh(self):
-        gate = VCC("VCC", "VCC1")
+        gate = GND("GND", "GND1")
 
         expected_output = {'O': 1}
         gate._logic()
@@ -265,12 +269,12 @@ class TestGND(TestCase):
         self.assertNotEqual(gate.outputs.pins, expected_output)
 
     def testLow(self):
-        gate = VCC("VCC", "VCC1")
+        gate = GND("GND", "GND1")
 
-        expected_output = {'O': 1}
+        expected_output = {'O': 0}
         gate._logic()
 
-        self.assertNotEqual(gate.outputs.pins, expected_output)
+        self.assertEqual(gate.outputs.pins, expected_output)
 
 
 class TestClock(TestCase):
